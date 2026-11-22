@@ -137,7 +137,7 @@ function playSfx(type) {
         gain.connect(audioCtx.destination);
         osc.start(now);
         osc.stop(now + 0.04);
-    } 
+    }
     else if (type === 'enter') {
         const notes = [523.25, 659.25, 783.99, 1046.50];
         notes.forEach((freq, idx) => {
@@ -208,6 +208,20 @@ let coveLights = [], ceilingSpots = [], mainDirectionalLight, hemisphereLight;
 let ambientStardust = null;
 let clock = new THREE.Clock();
 const textureLoader = new THREE.TextureLoader();
+
+// Dedicated 3D Perfume Interaction & Direct Rotation State
+let perfumeHitBoxes = [];
+let hoveredPerfumeIndex = -1;
+let isDraggingBottle = false;
+let bottleRotY = 0;
+let bottleRotX = 0;
+let bottleVelY = 0;
+let bottleVelX = 0;
+let lastPointerX = 0;
+let lastPointerY = 0;
+let pointerDownX = 0;
+let pointerDownY = 0;
+let pointerDownTime = 0;
 
 // Target Camera Positions for Smooth Gliding
 const targetCamPos = new THREE.Vector3(0, 2.7, 9.8);
@@ -658,9 +672,9 @@ function buildFlagshipBoutique() {
     const pedestalPositions = [
         { x: -4.8, z: -0.5 }, // 0: ONE BILLION
         { x: -2.4, z: 0.4 },  // 1: BLEU MIST
-        { x: 0.0,  z: 0.8 },  // 2: PARADOXE (Centerpiece)
-        { x: 2.4,  z: 0.4 },  // 3: 10000 WISHES
-        { x: 4.8,  z: -0.5 }  // 4: ETERNA FLORA
+        { x: 0.0, z: 0.8 },  // 2: PARADOXE (Centerpiece)
+        { x: 2.4, z: 0.4 },  // 3: 10000 WISHES
+        { x: 4.8, z: -0.5 }  // 4: ETERNA FLORA
     ];
 
     const plinthMat = new THREE.MeshStandardMaterial({
@@ -685,6 +699,7 @@ function buildFlagshipBoutique() {
 
     ceilingSpots = [];
     haloLights = [];
+    perfumeHitBoxes = [];
 
     PERFUMES.forEach((perfume, i) => {
         const pos = pedestalPositions[i];
@@ -748,6 +763,16 @@ function buildFlagshipBoutique() {
 
         bottleMeshes.push(bottle);
         bottleHolders.push(pedGroup);
+
+        // Invisible Clickable Hitbox Cylinder for Instant 1-Tap Interaction
+        const hitMesh = new THREE.Mesh(
+            new THREE.CylinderGeometry(1.15, 1.15, 4.0, 16),
+            new THREE.MeshBasicMaterial({ visible: false })
+        );
+        hitMesh.position.y = 1.9;
+        hitMesh.userData = { perfumeIndex: i };
+        pedGroup.add(hitMesh);
+        perfumeHitBoxes.push(hitMesh);
 
         boutiqueGroup.add(pedGroup);
     });
@@ -937,7 +962,7 @@ function createReal3DPerfumeObject(perfume) {
     return group;
 }
 
-// Mobile Touch & Keyboard Interaction System
+// Mobile Touch, Mouse & Keyboard Interaction System
 function setupInputListeners() {
     window.addEventListener("keydown", (e) => {
         const key = e.key.toLowerCase();
@@ -955,82 +980,137 @@ function setupInputListeners() {
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchStartTime = 0;
-    let isHorizontalSwipe = false;
-
+    // POINTER DOWN: Record touch/click origin
     window.addEventListener("pointerdown", (event) => {
-        touchStartX = event.clientX;
-        touchStartY = event.clientY;
-        touchStartTime = Date.now();
-        isHorizontalSwipe = false;
-    }, { passive: true });
-
-    window.addEventListener("pointermove", (event) => {
-        if (!touchStartTime || isTransitioningCam) return;
-        const dx = event.clientX - touchStartX;
-        const dy = event.clientY - touchStartY;
-
-        // Immediately detect horizontal carousel swipe intent and disengage OrbitControls
-        // This stops OrbitControls from twisting the camera sideways during a swipe gesture!
-        if (!isHorizontalSwipe && Math.abs(dx) > 20 && Math.abs(dx) > Math.abs(dy) * 1.3) {
-            isHorizontalSwipe = true;
-            if (orbitControls) {
-                orbitControls.enabled = false;
-            }
-        }
-    }, { passive: true });
-
-    window.addEventListener("pointerup", (event) => {
-        const dt = Date.now() - touchStartTime;
-        touchStartTime = 0;
-
-        if (GAME.mode !== 'STORE' && GAME.mode !== 'INSPECT') return;
-        if (event.target.tagName === 'BUTTON' || event.target.closest('#inspect-panel, #cart-drawer, #checkout-modal, #dialogue-modal, #mission-passed-overlay')) {
-            isHorizontalSwipe = false;
+        if (event.target.tagName === 'BUTTON' || event.target.closest('button, #inspect-panel, #cart-drawer, #checkout-modal, #dialogue-modal, #mission-passed-overlay')) {
             return;
         }
 
-        const dx = event.clientX - touchStartX;
-        const dy = event.clientY - touchStartY;
+        pointerDownX = event.clientX;
+        pointerDownY = event.clientY;
+        lastPointerX = event.clientX;
+        lastPointerY = event.clientY;
+        pointerDownTime = Date.now();
+
+        if (GAME.mode === 'INSPECT') {
+            isDraggingBottle = true;
+            bottleVelY = 0;
+            bottleVelX = 0;
+            if (renderer && renderer.domElement) {
+                renderer.domElement.style.cursor = 'grabbing';
+            }
+            const dragHint = document.getElementById("drag-hint");
+            if (dragHint) {
+                dragHint.style.opacity = '0';
+            }
+        }
+    });
+
+    // POINTER MOVE: Direct 3D Bottle Rotation & Salon Hover Illumination
+    window.addEventListener("pointermove", (event) => {
+        if (isDraggingBottle && GAME.mode === 'INSPECT') {
+            const dx = event.clientX - lastPointerX;
+            const dy = event.clientY - lastPointerY;
+            lastPointerX = event.clientX;
+            lastPointerY = event.clientY;
+
+            // Direct, instantaneous 3D bottle rotation
+            bottleRotY += dx * 0.009;
+            bottleRotX += dy * 0.005;
+            bottleRotX = THREE.MathUtils.clamp(bottleRotX, -0.28, 0.38);
+
+            bottleVelY = dx * 0.009;
+            bottleVelX = dy * 0.005;
+
+            const currentBottle = bottleMeshes[GAME.activePerfumeIndex];
+            if (currentBottle) {
+                currentBottle.rotation.y = bottleRotY;
+                currentBottle.rotation.x = bottleRotX;
+            }
+            return;
+        }
+
+        // Hover Illumination & Cursor Feedback for Mouse Devices
+        if (event.pointerType !== 'touch' && renderer && renderer.domElement && camera) {
+            if (GAME.mode === 'STORE') {
+                const rect = renderer.domElement.getBoundingClientRect();
+                mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, camera);
+                const hits = raycaster.intersectObjects(perfumeHitBoxes, false);
+
+                if (hits.length > 0) {
+                    const idx = hits[0].object.userData.perfumeIndex;
+                    renderer.domElement.style.cursor = 'pointer';
+
+                    if (hoveredPerfumeIndex !== idx) {
+                        if (hoveredPerfumeIndex >= 0 && haloLights[hoveredPerfumeIndex]) {
+                            haloLights[hoveredPerfumeIndex].intensity = 1.8;
+                        }
+                        hoveredPerfumeIndex = idx;
+                        if (haloLights[idx]) {
+                            haloLights[idx].intensity = 3.6;
+                        }
+                    }
+                } else {
+                    renderer.domElement.style.cursor = 'default';
+                    if (hoveredPerfumeIndex >= 0) {
+                        if (haloLights[hoveredPerfumeIndex]) {
+                            haloLights[hoveredPerfumeIndex].intensity = 1.8;
+                        }
+                        hoveredPerfumeIndex = -1;
+                    }
+                }
+            } else if (GAME.mode === 'INSPECT') {
+                if (!isDraggingBottle) {
+                    renderer.domElement.style.cursor = 'grab';
+                }
+            }
+        }
+    });
+
+    // POINTER UP: Click Detection & Inertia Hand-Off
+    window.addEventListener("pointerup", (event) => {
+        const dt = Date.now() - pointerDownTime;
+        const dx = event.clientX - pointerDownX;
+        const dy = event.clientY - pointerDownY;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
-        // Mobile Horizontal Swipe Triggered
-        if (isHorizontalSwipe || (Math.abs(dx) > 35 && Math.abs(dx) > Math.abs(dy) * 1.2 && dt < 600)) {
-            isHorizontalSwipe = false;
-            if (dx < 0) {
-                nextPerfume(); // Swipe Left -> Next Flacon
-            } else {
-                prevPerfume(); // Swipe Right -> Prev Flacon
+        if (isDraggingBottle) {
+            isDraggingBottle = false;
+            if (renderer && renderer.domElement && GAME.mode === 'INSPECT') {
+                renderer.domElement.style.cursor = 'grab';
             }
+        }
+
+        if (event.target.tagName === 'BUTTON' || event.target.closest('button, #cart-drawer, #checkout-modal, #dialogue-modal, #mission-passed-overlay')) {
             return;
         }
 
-        isHorizontalSwipe = false;
-
-        // Re-enable OrbitControls if it was disengaged during a drag
-        if (!isTransitioningCam && orbitControls && !orbitControls.enabled) {
-            orbitControls.enabled = true;
-        }
-
-        // Tap Detection (< 14px movement and < 350ms duration)
-        if (dist < 14 && dt < 350) {
+        // CLICK / TAP DETECTION (Movement < 24px and Duration < 750ms)
+        if (dist < 24 && dt < 750) {
             const rect = renderer.domElement.getBoundingClientRect();
             mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
             mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(boutiqueGroup.children, true);
+            const hits = raycaster.intersectObjects(perfumeHitBoxes, false);
 
-            if (intersects.length > 0) {
-                for (let hit of intersects) {
-                    for (let i = 0; i < bottleHolders.length; i++) {
-                        if (hit.object === bottleHolders[i] || bottleHolders[i].getObjectById(hit.object.id)) {
-                            inspectPerfume(i);
-                            return;
-                        }
-                    }
+            if (hits.length > 0) {
+                const idx = hits[0].object.userData.perfumeIndex;
+                inspectPerfume(idx);
+                return;
+            }
+        }
+
+        // Fast horizontal flick on mobile bottom area switches perfumes
+        if (window.innerWidth < 640 && GAME.mode === 'INSPECT' && pointerDownY > window.innerHeight * 0.52) {
+            if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.4 && dt < 450) {
+                if (dx < 0) {
+                    nextPerfume();
+                } else {
+                    prevPerfume();
                 }
             }
         }
@@ -1069,16 +1149,32 @@ function animate() {
     const delta = clock.getDelta();
     const time = clock.getElapsedTime();
 
-    // Turntable Auto-Rotation or Idle Breathing Shimmer
-    if (GAME.turntableActive && GAME.mode === 'INSPECT') {
-        const currentBottle = bottleMeshes[GAME.activePerfumeIndex];
-        if (currentBottle) {
-            currentBottle.rotation.y += 0.012;
-        }
-    } else if (GAME.mode === 'INSPECT') {
+    // Direct 3D Bottle Physics: Inertia Momentum & Turntable Auto-Rotation
+    if (GAME.mode === 'INSPECT') {
         const currentBottle = bottleMeshes[GAME.activePerfumeIndex];
         if (currentBottle && !isTransitioningCam) {
-            currentBottle.rotation.y += 0.002;
+            if (!isDraggingBottle) {
+                if (GAME.turntableActive) {
+                    // Continuous smooth turntable spin
+                    bottleRotY += 0.009;
+                    // Relax vertical pitch tilt back to level
+                    bottleRotX = THREE.MathUtils.lerp(bottleRotX, 0, 0.04);
+                } else {
+                    // Inertia physics damping
+                    bottleVelY *= 0.92;
+                    bottleVelX *= 0.92;
+                    bottleRotY += bottleVelY;
+                    bottleRotX += bottleVelX;
+                    bottleRotX = THREE.MathUtils.clamp(bottleRotX, -0.28, 0.38);
+
+                    // When velocity settles, gently return vertical tilt to neutral
+                    if (Math.abs(bottleVelX) < 0.001) {
+                        bottleRotX = THREE.MathUtils.lerp(bottleRotX, 0, 0.03);
+                    }
+                }
+                currentBottle.rotation.y = bottleRotY;
+                currentBottle.rotation.x = bottleRotX;
+            }
         }
     } else if (GAME.mode === 'STORE') {
         bottleMeshes.forEach((b, i) => {
@@ -1116,7 +1212,7 @@ function animate() {
             isTransitioningCam = false;
             if (orbitControls) {
                 orbitControls.target.copy(targetLookAt);
-                orbitControls.enabled = true;
+                orbitControls.enabled = (GAME.mode === 'STORE');
                 orbitControls.update();
             }
         }
@@ -1136,7 +1232,7 @@ function enterStore() {
     // Push history state so back button works!
     try {
         window.history.pushState({ view: 'store' }, '');
-    } catch (e) {}
+    } catch (e) { }
 
     const fader = document.getElementById("screen-fader");
     fader.classList.remove("opacity-0", "pointer-events-none");
@@ -1226,15 +1322,26 @@ function toggleTurntable() {
     GAME.turntableActive = !GAME.turntableActive;
     playSfx('click');
     const btn = document.getElementById("turntable-btn");
-    if (btn) {
-        if (GAME.turntableActive) {
-            btn.classList.add("border-gold-500", "text-gold-400");
-            showToast("Auto 360° Turntable Active", "rotate-cw");
-        } else {
-            btn.classList.remove("border-gold-500", "text-gold-400");
-            showToast("Turntable Paused", "pause");
-        }
+    const floatingBtn = document.getElementById("floating-360-btn");
+    const label = document.getElementById("turntable-label");
+    const floatingLabel = document.getElementById("floating-360-text");
+
+    if (GAME.turntableActive) {
+        if (btn) btn.classList.add("bg-gold-500/30", "border-gold-400", "text-white");
+        if (floatingBtn) floatingBtn.classList.add("bg-gold-500/30", "border-gold-400", "text-white");
+        if (label) label.innerText = "Pause 360°";
+        if (floatingLabel) floatingLabel.innerText = "Pause 360°";
+        showToast("Auto 360° Turntable Active", "rotate-cw");
+    } else {
+        if (btn) btn.classList.remove("bg-gold-500/30", "border-gold-400", "text-white");
+        if (floatingBtn) floatingBtn.classList.remove("bg-gold-500/30", "border-gold-400", "text-white");
+        if (label) label.innerText = "Auto 360°";
+        if (floatingLabel) floatingLabel.innerText = "Auto 360°";
+        showToast("Turntable Paused", "pause");
     }
+
+    const dragHint = document.getElementById("drag-hint");
+    if (dragHint) dragHint.style.opacity = '0';
 }
 
 // Next / Previous Flacon Carousel Navigation
@@ -1259,11 +1366,18 @@ function inspectPerfume(index) {
     // Push history state so back button works!
     try {
         window.history.pushState({ view: 'inspect', index }, '');
-    } catch (e) {}
+    } catch (e) { }
+
+    // Reset bottle rotation and momentum for the incoming perfume
+    bottleRotY = 0;
+    bottleRotX = 0;
+    bottleVelY = 0;
+    bottleVelX = 0;
+    isDraggingBottle = false;
 
     // Reset rotation of all bottles to pristine front orientation
     bottleMeshes.forEach((b) => {
-        b.rotation.y = 0;
+        b.rotation.set(0, 0, 0);
     });
 
     const bottle = bottleMeshes[index];
@@ -1305,12 +1419,23 @@ function inspectPerfume(index) {
         }
     }
 
-    // Show floating back button
+    // Show floating back button, 360 button, and drag hint
     const backBtn = document.getElementById("floating-back-btn");
     if (backBtn) backBtn.classList.remove("hidden");
+    const float360 = document.getElementById("floating-360-btn");
+    if (float360) float360.classList.remove("hidden");
+    const dragHint = document.getElementById("drag-hint");
+    if (dragHint) {
+        dragHint.classList.remove("hidden");
+        dragHint.style.opacity = '1';
+    }
 
     const panel = document.getElementById("inspect-panel");
     panel.classList.remove("hidden");
+
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
 
     // Populate inspect panel contents
     document.getElementById("inspect-tag").innerText = `SLOT 0${index + 1} // ${GAME.selectedSize} ML EXTRAIT`;
@@ -1383,8 +1508,18 @@ function closeInspectPanel() {
     document.getElementById("inspect-panel").classList.add("hidden");
     const backBtn = document.getElementById("floating-back-btn");
     if (backBtn) backBtn.classList.add("hidden");
+    const float360 = document.getElementById("floating-360-btn");
+    if (float360) float360.classList.add("hidden");
+    const dragHint = document.getElementById("drag-hint");
+    if (dragHint) dragHint.classList.add("hidden");
 
     GAME.mode = 'STORE';
+    isDraggingBottle = false;
+    GAME.turntableActive = false;
+
+    if (renderer && renderer.domElement) {
+        renderer.domElement.style.cursor = 'default';
+    }
 
     for (let i = 0; i < 5; i++) {
         const btn = document.getElementById(`scent-btn-${i}`);
@@ -1581,7 +1716,7 @@ function openCartDrawer() {
 
     try {
         window.history.pushState({ view: 'cart' }, '');
-    } catch (e) {}
+    } catch (e) { }
 }
 
 function closeCartDrawer() {
@@ -1646,12 +1781,12 @@ function orderViaWhatsApp() {
     const address = document.getElementById("cust-address").value || "N/A";
     const total = getCartTotal();
 
-    const itemsText = GAME.cart.map((item, idx) => 
+    const itemsText = GAME.cart.map((item, idx) =>
         `  ${idx + 1}. *${item.name}* (${item.size}) x${item.quantity} - $${item.price * item.quantity}`
     ).join("\n");
 
-    const message = 
-`👑 *PERFUME KOMPANY - BESPOKE ORDER INQUIRY* 👑
+    const message =
+        `👑 *PERFUME KOMPANY - BESPOKE ORDER INQUIRY* 👑
 ---------------------------------------
 👤 *Collector:* ${name}
 📞 *Contact:* ${phone}
@@ -1673,12 +1808,12 @@ Please confirm order dispatch. Thank you!`;
 function sendOrderReceiptWhatsApp() {
     if (!GAME.lastOrder) return;
     const order = GAME.lastOrder;
-    const itemsText = order.items.map((item, idx) => 
+    const itemsText = order.items.map((item, idx) =>
         `  ${idx + 1}. *${item.name}* (${item.size}) x${item.quantity} - $${item.price * item.quantity}`
     ).join("\n");
 
-    const message = 
-`👑 *PERFUME KOMPANY - ORDER CONFIRMATION* 👑
+    const message =
+        `👑 *PERFUME KOMPANY - ORDER CONFIRMATION* 👑
 ---------------------------------------
 🔖 *Order Ref:* #${order.orderId}
 👤 *Collector:* ${order.name}

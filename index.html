@@ -144,6 +144,18 @@
             <span>Salon Overview</span>
         </button>
 
+        <!-- FLOATING TOP-RIGHT "AUTO 360°" BUTTON (Visible in Inspect Mode) -->
+        <button onclick="toggleTurntable()" id="floating-360-btn" class="hidden absolute top-16 sm:top-20 right-3 sm:right-6 z-30 px-3.5 py-2 glass-panel hover:bg-gold-500/20 text-gold-400 hover:text-white rounded-xl border border-gold-500/40 transition flex items-center space-x-2 text-xs font-bold shadow-lg pointer-events-auto cursor-pointer" title="Auto 360° Continuous Spin">
+            <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+            <span id="floating-360-text">Auto 360°</span>
+        </button>
+
+        <!-- FLOATING 3D ROTATE DRAG HINT -->
+        <div id="drag-hint" class="hidden fixed top-[38%] sm:top-[44%] left-1/2 -translate-x-1/2 z-30 pointer-events-none flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-gold-500/30 text-gold-300 text-[10px] sm:text-xs tracking-wider uppercase font-semibold transition-opacity duration-500 shadow-2xl">
+            <i data-lucide="move" class="w-3.5 h-3.5 text-gold-400 animate-pulse"></i>
+            <span>Drag to Rotate 360°</span>
+        </div>
+
         <!-- FLOATING PREV / NEXT FLACON CAROUSEL CHEVRONS -->
         <button onclick="prevPerfume()" class="floating-arrow fixed left-2.5 sm:left-6 top-[24%] sm:top-1/2 -translate-y-1/2 z-40 p-2.5 sm:p-3.5 rounded-full text-gold-400 pointer-events-auto cursor-pointer shadow-2xl" title="Previous Flacon">
             <i data-lucide="chevron-left" class="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]"></i>
@@ -191,7 +203,13 @@
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
                     <span>Back to Salon</span>
                 </button>
-                <span id="inspect-tag" class="text-gray-400 font-mono text-[10px] uppercase tracking-widest">35% EXTRAIT</span>
+                <div class="flex items-center space-x-2">
+                    <button onclick="toggleTurntable()" id="turntable-btn" class="flex items-center space-x-1 text-gold-400 hover:text-white transition text-[10px] font-bold px-2 py-0.5 rounded-lg border border-gold-500/30 bg-black/40 hover:bg-gold-500/20 cursor-pointer" title="Auto 360° Rotation">
+                        <i data-lucide="rotate-cw" class="w-3 h-3"></i>
+                        <span id="turntable-label">Auto 360°</span>
+                    </button>
+                    <span id="inspect-tag" class="text-gray-400 font-mono text-[10px] uppercase tracking-widest">35% EXTRAIT</span>
+                </div>
             </div>
 
             <!-- High-Res Bottle Photograph Display (Desktop / Tablet) -->

@@ -211,3 +211,9 @@ canvas {
         max-width: 100% !important;
     }
 }
+
+/* 3D Drag to Rotate Hint Badge */
+#drag-hint {
+    pointer-events: none;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
