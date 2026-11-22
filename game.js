@@ -1,20 +1,14 @@
 /**
  * PERFUME KOMPANY - 3D LUXURY HAUTE PARFUMERIE BOUTIQUE
  * 
- * Features & Architecture:
- * 1. Minimalist luxury entrance with official 3D gold logo & refined "ENTER THE STORE" CTA.
- * 2. Mobile-first responsive 3D viewport with dynamic FOV calibration, touch swipe gestures,
- *    bottom-sheet drawer styling, and orientation change handling.
- * 3. Fully functional Bespoke Shopping Bag & Cart Drawer with size selection (50 ML / 100 ML),
- *    quantity controls, instant checkout, and direct WhatsApp order dispatch!
- * 4. Store Experience Upgrades:
- *    - Floating Prev/Next Carousel arrows, touch swiping, and keyboard arrow navigation.
- *    - Dynamic Ambience Lighting Switcher: Midnight Gold, Noir Gala, Emerald Royale.
- *    - Real-time 3D Bottle flacon scale adjustment on 50ml vs 100ml selection.
- *    - Scent Aura radiance pulse when spraying.
- *    - Physical Atomizer Cap Plunging + Volumetric Dual-Layer Aerosol Vapor Mist.
- *    - Interactive Theo Scent Finder questionnaire.
- *    - Sleek Toast notification engine for instant shopping feedback.
+ * High-End Professional Architecture:
+ * 1. Minimalist entrance with 3D gold logo & refined "ENTER THE STORE" CTA.
+ * 2. Mobile-first responsive 3D showroom with dynamic FOV calibration, bottom-sheet drawer,
+ *    and touch swipe carousel navigation.
+ * 3. Dedicated Back Button navigation (UI Back to Entrance, UI Back to Salon, and native browser/phone history popstate).
+ * 4. High-Fidelity 3D Luxury Crystal Flacons with floating golden bokeh stardust & museum spotlights.
+ * 5. Bespoke Shopping Bag & Cart Drawer with 50ml/100ml flacon size selection, live calculations,
+ *    checkout modal, and 1-click WhatsApp order dispatch.
  */
 
 // Global Game & Store State
@@ -145,7 +139,6 @@ function playSfx(type) {
         osc.stop(now + 0.04);
     } 
     else if (type === 'enter') {
-        // Luxury chime when entering store
         const notes = [523.25, 659.25, 783.99, 1046.50];
         notes.forEach((freq, idx) => {
             const osc = audioCtx.createOscillator();
@@ -161,7 +154,6 @@ function playSfx(type) {
         });
     }
     else if (type === 'cart') {
-        // Melodic sparkle chime for adding to cart
         const chord = [659.25, 880.00, 1046.50];
         chord.forEach((freq, idx) => {
             const osc = audioCtx.createOscillator();
@@ -176,43 +168,6 @@ function playSfx(type) {
             osc.stop(now + idx * 0.06 + 0.45);
         });
     }
-    else if (type === 'spray') {
-        // Tactile mechanical pump click
-        const clickOsc = audioCtx.createOscillator();
-        const clickGain = audioCtx.createGain();
-        clickOsc.type = 'square';
-        clickOsc.frequency.setValueAtTime(340, now);
-        clickOsc.frequency.exponentialRampToValueAtTime(80, now + 0.025);
-        clickGain.gain.setValueAtTime(0.24, now);
-        clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
-        clickOsc.connect(clickGain);
-        clickGain.connect(audioCtx.destination);
-        clickOsc.start(now);
-        clickOsc.stop(now + 0.025);
-
-        // High-pressure atomized mist hiss
-        const bufferSize = audioCtx.sampleRate * 0.5;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.18));
-        }
-
-        const noise = audioCtx.createBufferSource();
-        noise.buffer = buffer;
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.setValueAtTime(3200, now + 0.01);
-        filter.Q.setValueAtTime(1.8, now + 0.01);
-
-        const gain = audioCtx.createGain();
-        gain.gain.setValueAtTime(0.48, now + 0.01);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.52);
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(audioCtx.destination);
-        noise.start(now + 0.01);
-    } 
     else if (type === 'celebration') {
         const notes = [
             { f: 261.63, start: 0, dur: 0.2 },
@@ -248,9 +203,9 @@ function toggleSound() {
 
 // Three.js Scene Variables
 let scene, camera, renderer, orbitControls;
-let boutiqueGroup, bottleMeshes = [], bottleHolders = [], bottleCaps = [], haloLights = [];
+let boutiqueGroup, bottleMeshes = [], bottleHolders = [], haloLights = [];
 let coveLights = [], ceilingSpots = [], mainDirectionalLight, hemisphereLight;
-let sprayParticles = null, dropletParticles = null;
+let ambientStardust = null;
 let clock = new THREE.Clock();
 const textureLoader = new THREE.TextureLoader();
 
@@ -259,40 +214,22 @@ const targetCamPos = new THREE.Vector3(0, 2.7, 9.8);
 const targetLookAt = new THREE.Vector3(0, 1.8, 0);
 let isTransitioningCam = false;
 
-// Soft Feathered Circular Particle Texture (For Volumetric Atomized Vapor)
-function createVaporCloudTexture() {
+// Soft Golden Stardust / Amber Bokeh Particle Texture
+function createBokehStardustTexture() {
     const canvas = document.createElement('canvas');
     canvas.width = 128;
     canvas.height = 128;
     const ctx = canvas.getContext('2d');
 
     const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-    grad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
-    grad.addColorStop(0.25, 'rgba(255, 250, 235, 0.65)');
-    grad.addColorStop(0.55, 'rgba(254, 243, 199, 0.20)');
-    grad.addColorStop(0.85, 'rgba(254, 243, 199, 0.05)');
-    grad.addColorStop(1, 'rgba(254, 243, 199, 0)');
+    grad.addColorStop(0, 'rgba(255, 240, 180, 0.95)');
+    grad.addColorStop(0.25, 'rgba(245, 208, 97, 0.70)');
+    grad.addColorStop(0.55, 'rgba(212, 175, 55, 0.25)');
+    grad.addColorStop(0.85, 'rgba(212, 175, 55, 0.05)');
+    grad.addColorStop(1, 'rgba(212, 175, 55, 0)');
 
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 128, 128);
-    return new THREE.CanvasTexture(canvas);
-}
-
-// Crisp Droplet Texture (For Glistening Micro-Droplets)
-function createDropletTexture() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 64;
-    canvas.height = 64;
-    const ctx = canvas.getContext('2d');
-
-    const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-    grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-    grad.addColorStop(0.35, 'rgba(255, 250, 230, 0.85)');
-    grad.addColorStop(0.7, 'rgba(254, 240, 138, 0.25)');
-    grad.addColorStop(1, 'rgba(254, 240, 138, 0)');
-
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 64, 64);
     return new THREE.CanvasTexture(canvas);
 }
 
@@ -327,19 +264,19 @@ function createDiamondKnurlTexture() {
     return texture;
 }
 
-// Procedural Bespoke Luxury Perfume Label (Matches the Real Bottle Photos!)
-function createProceduralBottleLabel(perfume) {
+// Procedural Bespoke Luxury Perfume Label Plaque (Front or Back)
+function createProceduralBottleLabel(perfume, isBack = false) {
     const canvas = document.createElement('canvas');
     canvas.width = 512;
     canvas.height = 768;
     const ctx = canvas.getContext('2d');
 
-    // Rich matte black leather background
+    // Rich matte black leather/enamel background
     ctx.fillStyle = '#090a0d';
     ctx.fillRect(0, 0, 512, 768);
 
-    // Fine leather/enamel grain
-    for (let i = 0; i < 8000; i++) {
+    // Fine leather/matte texture
+    for (let i = 0; i < 6000; i++) {
         const x = Math.random() * 512;
         const y = Math.random() * 768;
         const s = Math.random() > 0.5 ? 24 : 14;
@@ -357,61 +294,128 @@ function createProceduralBottleLabel(perfume) {
     ctx.lineWidth = 2;
     ctx.strokeRect(32, 32, 448, 704);
 
-    // Gold Bottle Icon Outline (Official PK Monogram Emblem)
-    ctx.strokeStyle = '#f5d061';
-    ctx.lineWidth = 3.5;
-    ctx.strokeRect(238, 85, 36, 22);  // Cap
-    ctx.strokeRect(208, 112, 96, 110); // Flacon
+    if (!isBack) {
+        // FRONT FACE: EMBOSSED GOLD MONOGRAM & TITLE
+        // Gold Bottle Icon Outline (Official PK Monogram Emblem)
+        ctx.strokeStyle = '#f5d061';
+        ctx.lineWidth = 3.5;
+        ctx.strokeRect(238, 85, 36, 22);
+        ctx.strokeRect(208, 112, 96, 110);
 
-    // "PK" Monogram inside bottle
-    ctx.font = 'bold 52px "Cinzel", "Times New Roman", serif';
-    ctx.fillStyle = '#f5d061';
-    ctx.textAlign = 'center';
-    ctx.fillText('PK', 256, 192);
+        // "PK" Monogram inside bottle
+        ctx.font = 'bold 52px "Cinzel", "Times New Roman", serif';
+        ctx.fillStyle = '#f5d061';
+        ctx.textAlign = 'center';
+        ctx.fillText('PK', 256, 192);
 
-    // "PERFUME"
-    ctx.font = '700 24px "Cinzel", "Times New Roman", serif';
-    ctx.letterSpacing = '7px';
-    ctx.fillStyle = '#f5d061';
-    ctx.fillText('PERFUME', 256, 275);
+        // "PERFUME"
+        ctx.font = '700 24px "Cinzel", "Times New Roman", serif';
+        ctx.letterSpacing = '7px';
+        ctx.fillStyle = '#f5d061';
+        ctx.fillText('PERFUME', 256, 275);
 
-    // "KOMPANY"
-    ctx.font = '700 16px "Montserrat", sans-serif';
-    ctx.letterSpacing = '8px';
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText('KOMPANY', 256, 305);
+        // "KOMPANY"
+        ctx.font = '700 16px "Montserrat", sans-serif';
+        ctx.letterSpacing = '8px';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('KOMPANY', 256, 305);
 
-    // Gold Divider Line
-    ctx.strokeStyle = '#d4af37';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(170, 335);
-    ctx.lineTo(342, 335);
-    ctx.stroke();
+        // Gold Divider Line
+        ctx.strokeStyle = '#d4af37';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(170, 335);
+        ctx.lineTo(342, 335);
+        ctx.stroke();
 
-    // Perfume Name (Bold Embossed Gold)
-    ctx.font = '900 42px "Cinzel", "Impact", serif';
-    ctx.fillStyle = '#f5d061';
-    ctx.letterSpacing = '3px';
-    ctx.fillText(perfume.name, 256, 435);
+        // Perfume Name (Bold Embossed Gold)
+        ctx.font = '900 42px "Cinzel", "Impact", serif';
+        ctx.fillStyle = '#f5d061';
+        ctx.letterSpacing = '3px';
+        ctx.fillText(perfume.name, 256, 435);
 
-    // "Extrait De Parfum"
-    ctx.font = 'italic 24px "Cinzel", "Georgia", serif';
-    ctx.fillStyle = '#e2e8f0';
-    ctx.fillText('Extrait De Parfum', 256, 500);
+        // "Extrait De Parfum"
+        ctx.font = 'italic 24px "Cinzel", "Georgia", serif';
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillText('Extrait De Parfum', 256, 500);
 
-    // "35% PURE EXTRAIT"
-    ctx.font = '700 20px "Montserrat", sans-serif';
-    ctx.fillStyle = '#f5d061';
-    ctx.letterSpacing = '5px';
-    ctx.fillText('35% EXTRAIT', 256, 560);
+        // "35% PURE EXTRAIT"
+        ctx.font = '700 20px "Montserrat", sans-serif';
+        ctx.fillStyle = '#f5d061';
+        ctx.letterSpacing = '5px';
+        ctx.fillText('35% EXTRAIT', 256, 560);
+    } else {
+        // BACK FACE: COLLECTOR'S BATCH CERTIFICATE & GOLD BARCODE
+        ctx.textAlign = 'center';
+
+        // PK Monogram Seal
+        ctx.font = 'bold 44px "Cinzel", serif';
+        ctx.fillStyle = '#f5d061';
+        ctx.fillText('PK', 256, 115);
+
+        ctx.font = '700 18px "Montserrat", sans-serif';
+        ctx.letterSpacing = '6px';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('PERFUME KOMPANY', 256, 155);
+
+        // Divider
+        ctx.strokeStyle = '#d4af37';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(140, 180);
+        ctx.lineTo(372, 180);
+        ctx.stroke();
+
+        // Certificate Details
+        ctx.font = '600 17px "Montserrat", sans-serif';
+        ctx.fillStyle = '#f5d061';
+        ctx.letterSpacing = '3px';
+        ctx.fillText('AUTHENTIC EXTRAIT', 256, 230);
+
+        ctx.font = '400 15px "Montserrat", sans-serif';
+        ctx.fillStyle = '#cbd5e1';
+        ctx.letterSpacing = '1px';
+        ctx.fillText('HAND-POURED IN SMALL BATCHES', 256, 268);
+        ctx.fillText('35% ESSENTIAL OIL CONCENTRATION', 256, 298);
+        ctx.fillText('NATURAL AGED EXTRACTS', 256, 328);
+
+        ctx.font = '600 14px "Orbitron", monospace';
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText(`BATCH REF: PK-2026-0${perfume.id}`, 256, 388);
+        ctx.fillText('FORMULATION: PRIVATE RESERVE', 256, 418);
+
+        // Gold Barcode Graphics
+        ctx.fillStyle = '#f5d061';
+        const barXStart = 106;
+        const barWidth = 300;
+        const barHeights = [
+            4, 2, 6, 2, 4, 8, 2, 4, 2, 6, 4, 2, 8, 4, 2, 6, 2, 4, 6, 2, 8, 4, 2, 4, 6, 2, 4, 8, 2, 4, 6, 2
+        ];
+        let currentX = barXStart;
+        for (let i = 0; i < barHeights.length; i++) {
+            const w = barHeights[i];
+            ctx.fillRect(currentX, 475, w, 75);
+            currentX += w + (i % 3 === 0 ? 6 : 3);
+            if (currentX > barXStart + barWidth) break;
+        }
+
+        ctx.font = '600 13px "Orbitron", monospace';
+        ctx.fillStyle = '#d4af37';
+        ctx.letterSpacing = '4px';
+        ctx.fillText(`7 93573 00${perfume.id}8 2`, 256, 580);
+
+        ctx.font = 'italic 14px "Georgia", serif';
+        ctx.fillStyle = '#64748b';
+        ctx.letterSpacing = '1px';
+        ctx.fillText('Private Boutique Collector Edition', 256, 645);
+    }
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.anisotropy = 8;
     return texture;
 }
 
-// Studio Lighting Environment Map (Powers PBR Reflection on Gold, Crystal Glass & Pedestals)
+// Studio Lighting Environment Map (PBR Reflections)
 function setupStudioEnvironment() {
     try {
         const pmremGen = new THREE.PMREMGenerator(renderer);
@@ -422,17 +426,16 @@ function setupStudioEnvironment() {
         canvas.height = 512;
         const ctx = canvas.getContext('2d');
 
-        // Dark Luxury Studio Gradient
         const grad = ctx.createLinearGradient(0, 0, 0, 512);
         grad.addColorStop(0, '#ffffff');
         grad.addColorStop(0.2, '#e2e8f0');
         grad.addColorStop(0.45, '#475569');
         grad.addColorStop(0.65, '#1e293b');
-        grad.addColorStop(1, '#07070a');
+        grad.addColorStop(1, '#050507');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 1024, 512);
 
-        // Softbox Key Light (Crisp Pure White)
+        // Softbox Key Light
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.ellipse(320, 150, 160, 80, 0, 0, Math.PI * 2);
@@ -444,7 +447,7 @@ function setupStudioEnvironment() {
         ctx.ellipse(760, 170, 170, 90, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Overhead Strip Softbox (Gives long specular edge reflections)
+        // Overhead Strip Softbox
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(60, 35, 904, 45);
 
@@ -454,8 +457,46 @@ function setupStudioEnvironment() {
         scene.environment = envMap;
         pmremGen.dispose();
     } catch (e) {
-        console.warn("Studio PMREM environment fallback", e);
+        console.warn("Studio PMREM fallback", e);
     }
+}
+
+// Floating Golden Stardust / Amber Bokeh Particle Engine
+function buildAmbientStardust() {
+    const particleCount = 280;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const velocities = [];
+
+    for (let i = 0; i < particleCount; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * 22;     // X spread
+        positions[i * 3 + 1] = 0.5 + Math.random() * 6.5; // Y height
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 10; // Z depth
+
+        velocities.push({
+            vx: (Math.random() - 0.5) * 0.003,
+            vy: 0.002 + Math.random() * 0.004,
+            vz: (Math.random() - 0.5) * 0.003,
+            phase: Math.random() * Math.PI * 2
+        });
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+    const texture = createBokehStardustTexture();
+    const material = new THREE.PointsMaterial({
+        map: texture,
+        color: 0xfef08a,
+        size: 0.32,
+        transparent: true,
+        opacity: 0.65,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+    });
+
+    ambientStardust = new THREE.Points(geometry, material);
+    ambientStardust.velocities = velocities;
+    scene.add(ambientStardust);
 }
 
 function init3D() {
@@ -464,7 +505,7 @@ function init3D() {
     const height = window.innerHeight;
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x060608);
+    scene.background = new THREE.Color(0x050507);
 
     // Responsive FOV: 48° on mobile portrait, 38° on landscape/desktop
     const initialFov = width < height ? 48 : 38;
@@ -472,7 +513,7 @@ function init3D() {
 
     const isMobile = width < 640;
     if (isMobile) {
-        targetCamPos.set(0, 3.2, 12.0);
+        targetCamPos.set(0, 3.2, 11.5);
     } else {
         targetCamPos.set(0, 2.7, 9.8);
     }
@@ -487,12 +528,12 @@ function init3D() {
     renderer.toneMappingExposure = 1.18;
     container.appendChild(renderer.domElement);
 
-    // Interactive 360° OrbitControls (Mobile Touch Optimized)
+    // Interactive 360° OrbitControls
     if (typeof THREE.OrbitControls !== 'undefined') {
         orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
         orbitControls.enableDamping = true;
         orbitControls.dampingFactor = 0.08;
-        orbitControls.enablePan = false; // Disabling pan prevents accidental off-centering on touch devices
+        orbitControls.enablePan = false;
         orbitControls.minDistance = 2.0;
         orbitControls.maxDistance = 16.0;
         orbitControls.minPolarAngle = Math.PI * 0.35;
@@ -501,7 +542,7 @@ function init3D() {
         orbitControls.enabled = true;
     }
 
-    // High-End Showroom Lighting
+    // Museum Lighting
     hemisphereLight = new THREE.HemisphereLight(0xffedd5, 0x09090e, 1.25);
     scene.add(hemisphereLight);
 
@@ -514,11 +555,12 @@ function init3D() {
 
     setupStudioEnvironment();
     buildFlagshipBoutique();
-    buildSprayParticleSystem();
+    buildAmbientStardust();
 
     window.addEventListener("resize", onWindowResize);
     window.addEventListener("orientationchange", () => setTimeout(onWindowResize, 150));
     setupInputListeners();
+    setupHistoryNavigation();
     renderCartUI();
     animate();
 }
@@ -542,25 +584,25 @@ function buildFlagshipBoutique() {
     floor.receiveShadow = true;
     boutiqueGroup.add(floor);
 
-    // 2. Architectural Luxury Arched Salon Wall (at z = -5.5)
+    // 2. Architectural Luxury Arched Salon Wall
     const wallZ = -5.5;
 
     // Deep Smoked Charcoal Base Wall
     const backPanel = new THREE.Mesh(
         new THREE.PlaneGeometry(36, 12),
-        new THREE.MeshStandardMaterial({ color: 0x090a0e, roughness: 0.7 })
+        new THREE.MeshStandardMaterial({ color: 0x08090d, roughness: 0.75 })
     );
     backPanel.position.set(0, 5, wallZ);
     boutiqueGroup.add(backPanel);
 
-    // Architectural Arched Niches behind the pedestals (Warm Indirect Cove Wash)
+    // Architectural Arched Niches behind the pedestals
     const nicheXPositions = [-4.8, -2.4, 0.0, 2.4, 4.8];
     coveLights = [];
-    nicheXPositions.forEach((nx, idx) => {
+    nicheXPositions.forEach((nx) => {
         // Recessed Arch Panel
         const arch = new THREE.Mesh(
             new THREE.PlaneGeometry(2.1, 7.5),
-            new THREE.MeshStandardMaterial({ color: 0x111218, roughness: 0.45 })
+            new THREE.MeshStandardMaterial({ color: 0x0e1017, roughness: 0.45 })
         );
         arch.position.set(nx, 4.2, wallZ + 0.05);
         boutiqueGroup.add(arch);
@@ -595,7 +637,7 @@ function buildFlagshipBoutique() {
     [-18, 18].forEach(sideX => {
         const sideWall = new THREE.Mesh(
             new THREE.PlaneGeometry(26, 12),
-            new THREE.MeshStandardMaterial({ color: 0x08080b, roughness: 0.8 })
+            new THREE.MeshStandardMaterial({ color: 0x07080a, roughness: 0.85 })
         );
         sideWall.position.set(sideX, 5, 0);
         sideWall.rotation.y = sideX > 0 ? -Math.PI / 2 : Math.PI / 2;
@@ -612,7 +654,7 @@ function buildFlagshipBoutique() {
     ];
 
     const plinthMat = new THREE.MeshStandardMaterial({
-        color: 0x121318,
+        color: 0x111216,
         roughness: 0.32,
         metalness: 0.22
     });
@@ -689,14 +731,13 @@ function buildFlagshipBoutique() {
         ceilingSpots.push(ceilingSpot);
 
         // True 3D Perfume Bottle Object
-        const { bottle, capGroup } = createReal3DPerfumeObject(perfume);
+        const bottle = createReal3DPerfumeObject(perfume);
         bottle.position.y = 2.08;
         bottle.rotation.y = 0;
         pedGroup.add(bottle);
 
         bottleMeshes.push(bottle);
         bottleHolders.push(pedGroup);
-        bottleCaps.push(capGroup);
 
         boutiqueGroup.add(pedGroup);
     });
@@ -704,7 +745,7 @@ function buildFlagshipBoutique() {
     scene.add(boutiqueGroup);
 }
 
-// True 3D Perfume Bottle Object (Built with Crystal Glass, Liquid Core, Cap & Label)
+// True 3D Perfume Bottle Object (Crystal Glass, Liquid Core, Cap & Gold Plaque)
 function createReal3DPerfumeObject(perfume) {
     const group = new THREE.Group();
 
@@ -792,15 +833,14 @@ function createReal3DPerfumeObject(perfume) {
     pumpMesh.position.y = 0.56;
     group.add(pumpMesh);
 
-    // 5. Inset Black Leather & Gold Embossed Label Plaque (Front Face ONLY, facing +Z)
-    const labelTex = createProceduralBottleLabel(perfume);
+    // 5. Inset Black Leather & Gold Embossed Label Plaque (Front Face, facing +Z)
+    const labelTex = createProceduralBottleLabel(perfume, false);
     const labelMat = new THREE.MeshStandardMaterial({
         map: labelTex,
         roughness: 0.35,
         metalness: 0.75
     });
 
-    // Raised Gold Bezel Frame surrounding the label (Flush against front glass at z = +0.222)
     const goldBezelMat = new THREE.MeshStandardMaterial({
         color: 0xf5d061,
         metalness: 0.98,
@@ -814,7 +854,24 @@ function createReal3DPerfumeObject(perfume) {
     frontLabel.position.set(0, 0.06, 0.228);
     group.add(frontLabel);
 
-    // 6. Polished 24K Mirror Gold Collar (Fixed to bottle)
+    // Inset Back Collector Certificate Plaque (Back Face, facing -Z)
+    const backLabelTex = createProceduralBottleLabel(perfume, true);
+    const backLabelMat = new THREE.MeshStandardMaterial({
+        map: backLabelTex,
+        roughness: 0.35,
+        metalness: 0.75
+    });
+
+    const backBezel = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.98, 0.01), goldBezelMat);
+    backBezel.position.set(0, 0.06, -0.222);
+    group.add(backBezel);
+
+    const backLabel = new THREE.Mesh(new THREE.PlaneGeometry(0.64, 0.96), backLabelMat);
+    backLabel.rotation.y = Math.PI;
+    backLabel.position.set(0, 0.06, -0.228);
+    group.add(backLabel);
+
+    // 6. Polished 24K Mirror Gold Collar
     const collar = new THREE.Mesh(
         new THREE.CylinderGeometry(0.22, 0.25, 0.14, 32),
         new THREE.MeshPhysicalMaterial({
@@ -827,7 +884,7 @@ function createReal3DPerfumeObject(perfume) {
     collar.position.y = 0.72;
     group.add(collar);
 
-    // 7. Plunging Atomizer Cap Group (Animates down on spray!)
+    // 7. Diamond-Knurled Gold Cap
     const capGroup = new THREE.Group();
     capGroup.position.set(0, 0.72, 0);
 
@@ -840,12 +897,10 @@ function createReal3DPerfumeObject(perfume) {
         bumpScale: 0.05
     });
 
-    // Main Knurled Body
     const capBody = new THREE.Mesh(new THREE.CylinderGeometry(0.23, 0.23, 0.32, 32), knurledCapMat);
     capBody.position.y = 0.23;
     capGroup.add(capBody);
 
-    // Lower smooth polished gold band on cap
     const lowerBand = new THREE.Mesh(
         new THREE.CylinderGeometry(0.24, 0.24, 0.035, 32),
         goldBezelMat
@@ -853,7 +908,6 @@ function createReal3DPerfumeObject(perfume) {
     lowerBand.position.y = 0.09;
     capGroup.add(lowerBand);
 
-    // Upper smooth polished gold band on cap
     const upperBand = new THREE.Mesh(
         new THREE.CylinderGeometry(0.24, 0.24, 0.035, 32),
         goldBezelMat
@@ -861,7 +915,6 @@ function createReal3DPerfumeObject(perfume) {
     upperBand.position.y = 0.37;
     capGroup.add(upperBand);
 
-    // Top cap cover
     const topCover = new THREE.Mesh(
         new THREE.CylinderGeometry(0.24, 0.24, 0.015, 32),
         goldBezelMat
@@ -871,166 +924,14 @@ function createReal3DPerfumeObject(perfume) {
 
     group.add(capGroup);
 
-    return { bottle: group, capGroup };
-}
-
-// Volumetric Dual-Layer Physical Mist Spray Engine
-function buildSprayParticleSystem() {
-    // Layer 1: Volumetric Atomized Vapor Clouds (300 particles)
-    const vaporCount = 300;
-    const vaporGeo = new THREE.BufferGeometry();
-    const vaporPos = new Float32Array(vaporCount * 3);
-    const vaporVels = [];
-    const vaporSizes = new Float32Array(vaporCount);
-    const vaporLifes = new Float32Array(vaporCount);
-
-    for (let i = 0; i < vaporCount; i++) {
-        vaporPos[i * 3] = 0;
-        vaporPos[i * 3 + 1] = 0;
-        vaporPos[i * 3 + 2] = 0;
-        vaporVels.push(new THREE.Vector3(0, 0, 0));
-        vaporSizes[i] = 0.1;
-        vaporLifes[i] = 0;
-    }
-
-    vaporGeo.setAttribute('position', new THREE.BufferAttribute(vaporPos, 3));
-    vaporGeo.setAttribute('size', new THREE.BufferAttribute(vaporSizes, 1));
-
-    const vaporTex = createVaporCloudTexture();
-    const vaporMat = new THREE.PointsMaterial({
-        map: vaporTex,
-        color: 0xfffcf0,
-        size: 0.28,
-        transparent: true,
-        opacity: 0,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false
-    });
-
-    sprayParticles = new THREE.Points(vaporGeo, vaporMat);
-    sprayParticles.velocities = vaporVels;
-    sprayParticles.sizes = vaporSizes;
-    sprayParticles.lifes = vaporLifes;
-    scene.add(sprayParticles);
-
-    // Layer 2: Glistening Micro-Droplets (120 particles)
-    const dropCount = 120;
-    const dropGeo = new THREE.BufferGeometry();
-    const dropPos = new Float32Array(dropCount * 3);
-    const dropVels = [];
-
-    for (let i = 0; i < dropCount; i++) {
-        dropPos[i * 3] = 0;
-        dropPos[i * 3 + 1] = 0;
-        dropPos[i * 3 + 2] = 0;
-        dropVels.push(new THREE.Vector3(0, 0, 0));
-    }
-
-    dropGeo.setAttribute('position', new THREE.BufferAttribute(dropPos, 3));
-    const dropTex = createDropletTexture();
-    const dropMat = new THREE.PointsMaterial({
-        map: dropTex,
-        color: 0xffffff,
-        size: 0.08,
-        transparent: true,
-        opacity: 0,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false
-    });
-
-    dropletParticles = new THREE.Points(dropGeo, dropMat);
-    dropletParticles.velocities = dropVels;
-    scene.add(dropletParticles);
-}
-
-// Trigger Fragrance Mist Burst with Physical Atomizer Plunge and Pedestal Aura
-function triggerSprayEffect(originPos, capGroup, perfumeIndex) {
-    playSfx('spray');
-
-    // 1. Physical Atomizer Cap Plunge Animation
-    if (capGroup) {
-        capGroup.position.y = 0.68;
-        setTimeout(() => {
-            capGroup.position.y = 0.72;
-        }, 120);
-    }
-
-    // 2. Pedestal Scent Aura Pulse
-    const halo = haloLights[perfumeIndex];
-    if (halo) {
-        const origIntensity = halo.intensity;
-        halo.intensity = 4.2;
-        let decayTimer = setInterval(() => {
-            if (halo.intensity > 1.8) {
-                halo.intensity -= 0.15;
-            } else {
-                halo.intensity = 1.8;
-                clearInterval(decayTimer);
-            }
-        }, 30);
-    }
-
-    // 3. Volumetric Vapor Cloud Eruption
-    const vPositions = sprayParticles.geometry.attributes.position.array;
-    const vVels = sprayParticles.velocities;
-    const vSizes = sprayParticles.sizes;
-    const vLifes = sprayParticles.lifes;
-
-    sprayParticles.material.opacity = 0.95;
-    sprayParticles.position.copy(originPos);
-
-    for (let i = 0; i < vVels.length; i++) {
-        vPositions[i * 3] = 0;
-        vPositions[i * 3 + 1] = 0;
-        vPositions[i * 3 + 2] = 0;
-
-        const angle = Math.random() * Math.PI * 2;
-        const spread = 0.02 + Math.random() * 0.06;
-        const speed = 0.09 + Math.random() * 0.11;
-
-        vVels[i].set(
-            Math.cos(angle) * spread,
-            Math.sin(angle) * spread * 0.6 + 0.015,
-            speed
-        );
-        vSizes[i] = 0.12 + Math.random() * 0.1;
-        vLifes[i] = 1.0;
-    }
-    sprayParticles.geometry.attributes.position.needsUpdate = true;
-
-    // 4. Glistening Micro-Droplets Eruption
-    const dPositions = dropletParticles.geometry.attributes.position.array;
-    const dVels = dropletParticles.velocities;
-
-    dropletParticles.material.opacity = 0.90;
-    dropletParticles.position.copy(originPos);
-
-    for (let i = 0; i < dVels.length; i++) {
-        dPositions[i * 3] = 0;
-        dPositions[i * 3 + 1] = 0;
-        dPositions[i * 3 + 2] = 0;
-
-        const angle = Math.random() * Math.PI * 2;
-        const spread = 0.015 + Math.random() * 0.045;
-        const speed = 0.11 + Math.random() * 0.14;
-
-        dVels[i].set(
-            Math.cos(angle) * spread,
-            Math.sin(angle) * spread * 0.5,
-            speed
-        );
-    }
-    dropletParticles.geometry.attributes.position.needsUpdate = true;
+    return group;
 }
 
 // Mobile Touch & Keyboard Interaction System
 function setupInputListeners() {
     window.addEventListener("keydown", (e) => {
         const key = e.key.toLowerCase();
-        if (key === ' ') {
-            if (GAME.mode === 'INSPECT' || GAME.mode === 'STORE') sprayCurrentPerfume();
-        }
-        else if (key === 'escape') {
+        if (key === 'escape') {
             closeAllDrawersAndModals();
         }
         else if (key === 'arrowright') {
@@ -1096,73 +997,87 @@ function setupInputListeners() {
     });
 }
 
+// Browser History & Phone Hardware Back Button Handler
+function setupHistoryNavigation() {
+    window.addEventListener("popstate", (e) => {
+        if (document.getElementById("checkout-modal") && !document.getElementById("checkout-modal").classList.contains("hidden")) {
+            closeCheckoutModal();
+            return;
+        }
+        if (document.getElementById("cart-drawer") && document.getElementById("cart-drawer").classList.contains("cart-open")) {
+            closeCartDrawer();
+            return;
+        }
+        if (document.getElementById("dialogue-modal") && !document.getElementById("dialogue-modal").classList.contains("hidden")) {
+            closeDialogueModal();
+            return;
+        }
+        if (GAME.mode === 'INSPECT') {
+            closeInspectPanel();
+            return;
+        }
+        if (GAME.mode === 'STORE') {
+            returnToEntrance();
+            return;
+        }
+    });
+}
+
 function animate() {
     requestAnimationFrame(animate);
 
     const delta = clock.getDelta();
     const time = clock.getElapsedTime();
 
-    // Turntable Auto-Rotation
+    // Turntable Auto-Rotation or Idle Shimmer
     if (GAME.turntableActive && GAME.mode === 'INSPECT') {
         const currentBottle = bottleMeshes[GAME.activePerfumeIndex];
         if (currentBottle) {
             currentBottle.rotation.y += 0.012;
         }
+    } else if (GAME.mode === 'INSPECT') {
+        const currentBottle = bottleMeshes[GAME.activePerfumeIndex];
+        if (currentBottle) {
+            currentBottle.rotation.y += 0.002;
+        }
     } else if (GAME.mode === 'STORE') {
-        // Subtle ambient turntable rotation in grand salon overview
         bottleMeshes.forEach((b, i) => {
             b.rotation.y += 0.006;
             b.position.y = 2.08 + Math.sin(time * 2 + i) * 0.02;
         });
     }
 
-    // Physical Spray Mist Simulation Update
-    if (sprayParticles && sprayParticles.material.opacity > 0) {
-        const vPos = sprayParticles.geometry.attributes.position.array;
-        const vVels = sprayParticles.velocities;
-        for (let i = 0; i < vVels.length; i++) {
-            vPos[i * 3] += vVels[i].x;
-            vPos[i * 3 + 1] += vVels[i].y;
-            vPos[i * 3 + 2] += vVels[i].z;
+    // Drifting Golden Amber Stardust Animation
+    if (ambientStardust) {
+        const posArray = ambientStardust.geometry.attributes.position.array;
+        const vels = ambientStardust.velocities;
+        for (let i = 0; i < vels.length; i++) {
+            posArray[i * 3 + 1] += vels[i].vy;
+            posArray[i * 3] += Math.sin(time * 0.5 + vels[i].phase) * 0.003;
 
-            vVels[i].x *= 0.94;
-            vVels[i].y *= 0.94;
-            vVels[i].z *= 0.93;
-            vVels[i].y += 0.0012;
+            // Loop back to floor when drifting too high
+            if (posArray[i * 3 + 1] > 7.5) {
+                posArray[i * 3 + 1] = 0.5;
+            }
         }
-        sprayParticles.material.opacity -= 0.022;
-        sprayParticles.geometry.attributes.position.needsUpdate = true;
-    }
-
-    if (dropletParticles && dropletParticles.material.opacity > 0) {
-        const dPos = dropletParticles.geometry.attributes.position.array;
-        const dVels = dropletParticles.velocities;
-        for (let i = 0; i < dVels.length; i++) {
-            dPos[i * 3] += dVels[i].x;
-            dPos[i * 3 + 1] += dVels[i].y;
-            dPos[i * 3 + 2] += dVels[i].z;
-
-            dVels[i].x *= 0.95;
-            dVels[i].y *= 0.95;
-            dVels[i].z *= 0.95;
-            dVels[i].y -= 0.0008;
-        }
-        dropletParticles.material.opacity -= 0.026;
-        dropletParticles.geometry.attributes.position.needsUpdate = true;
+        ambientStardust.geometry.attributes.position.needsUpdate = true;
     }
 
     // Smooth camera glide
     if (isTransitioningCam) {
         camera.position.lerp(targetCamPos, 0.08);
-        if (orbitControls) {
-            orbitControls.target.lerp(targetLookAt, 0.08);
-        }
         if (camera.position.distanceTo(targetCamPos) < 0.03) {
+            camera.position.copy(targetCamPos);
             isTransitioningCam = false;
+            if (orbitControls) {
+                orbitControls.target.copy(targetLookAt);
+                orbitControls.enabled = true;
+                orbitControls.update();
+            }
         }
     }
 
-    if (orbitControls) {
+    if (orbitControls && orbitControls.enabled) {
         orbitControls.update();
     }
 
@@ -1173,6 +1088,11 @@ function animate() {
 function enterStore() {
     initAudio();
     playSfx('enter');
+
+    // Push history state so back button works!
+    try {
+        window.history.pushState({ view: 'store' }, '');
+    } catch (e) {}
 
     const fader = document.getElementById("screen-fader");
     fader.classList.remove("opacity-0", "pointer-events-none");
@@ -1188,7 +1108,7 @@ function enterStore() {
         GAME.mode = 'STORE';
 
         const isMobile = window.innerWidth < 640;
-        targetCamPos.set(0, isMobile ? 3.2 : 2.7, isMobile ? 12.0 : 9.8);
+        targetCamPos.set(0, isMobile ? 3.2 : 2.7, isMobile ? 12.5 : 9.8);
         targetLookAt.set(0, 1.8, 0);
         camera.position.copy(targetCamPos);
         if (orbitControls) {
@@ -1203,13 +1123,41 @@ function enterStore() {
     }, 600);
 }
 
+// Return to Entrance Landing Screen (Back Button Handler)
+function returnToEntrance() {
+    playSfx('click');
+    closeAllDrawersAndModals();
+
+    const fader = document.getElementById("screen-fader");
+    fader.classList.remove("opacity-0", "pointer-events-none");
+    fader.classList.add("opacity-100");
+
+    setTimeout(() => {
+        const storeHud = document.getElementById("store-hud");
+        storeHud.classList.add("hidden");
+
+        const titleScreen = document.getElementById("title-screen");
+        titleScreen.classList.remove("hidden");
+
+        GAME.mode = 'TITLE';
+
+        // Reset camera
+        targetCamPos.set(0, 2.7, 9.8);
+        targetLookAt.set(0, 1.8, 0);
+        camera.position.copy(targetCamPos);
+
+        fader.classList.remove("opacity-100");
+        fader.classList.add("opacity-0", "pointer-events-none");
+    }, 500);
+}
+
 // Reset to Overview Grand Salon View
 function resetToOverviewCamera() {
     playSfx('click');
     closeInspectPanel();
     closeCartDrawer();
     const isMobile = window.innerWidth < 640;
-    targetCamPos.set(0, isMobile ? 3.2 : 2.7, isMobile ? 12.0 : 9.8);
+    targetCamPos.set(0, isMobile ? 3.2 : 2.7, isMobile ? 12.5 : 9.8);
     targetLookAt.set(0, 1.8, 0);
     isTransitioningCam = true;
 
@@ -1218,6 +1166,7 @@ function resetToOverviewCamera() {
     });
 
     if (orbitControls) {
+        orbitControls.enabled = false;
         orbitControls.minDistance = 2.2;
         orbitControls.maxDistance = 16.0;
     }
@@ -1258,6 +1207,11 @@ function inspectPerfume(index) {
     const perfume = PERFUMES[index];
     playSfx('click');
 
+    // Push history state so back button works!
+    try {
+        window.history.pushState({ view: 'inspect', index }, '');
+    } catch (e) {}
+
     // Reset rotation of other bottles
     bottleMeshes.forEach((b, idx) => {
         if (idx !== index) b.rotation.y = 0;
@@ -1269,41 +1223,43 @@ function inspectPerfume(index) {
         bottle.getWorldPosition(worldPos);
 
         const isMobile = window.innerWidth < 640;
-        // On mobile, frame the camera slightly higher so bottom drawer doesn't obstruct the flacon
+        // On mobile, frame the camera slightly lower in lookAt so the bottle rises into the open top sky above the bottom sheet
         targetCamPos.set(
-            isMobile ? worldPos.x : worldPos.x - 0.28, 
-            worldPos.y + (isMobile ? 0.38 : 0.12), 
-            worldPos.z + (isMobile ? 3.6 : 3.2)
+            isMobile ? worldPos.x : worldPos.x - 0.35, 
+            worldPos.y + (isMobile ? -0.35 : 0.12), 
+            worldPos.z + (isMobile ? 3.4 : 3.1)
         );
         targetLookAt.set(
             worldPos.x, 
-            worldPos.y + (isMobile ? 0.38 : 0.06), 
+            worldPos.y + (isMobile ? -0.65 : 0.05), 
             worldPos.z
         );
         isTransitioningCam = true;
 
         if (orbitControls) {
-            orbitControls.target.set(worldPos.x, worldPos.y + (isMobile ? 0.38 : 0.06), worldPos.z);
-            orbitControls.minDistance = 2.0;
-            orbitControls.maxDistance = isMobile ? 6.0 : 5.0;
+            orbitControls.enabled = false;
+            orbitControls.minDistance = 1.8;
+            orbitControls.maxDistance = isMobile ? 5.5 : 5.0;
         }
 
         applyBottleScale(bottle, GAME.selectedSize);
     }
 
-    // Highlight top navigation button (if visible on desktop)
+    // Highlight bottom scent selector pill
     for (let i = 0; i < 5; i++) {
-        const btn = document.getElementById(`nav-btn-${i}`);
+        const btn = document.getElementById(`scent-btn-${i}`);
         if (btn) {
             if (i === index) {
-                btn.classList.add("bg-gold-500", "text-black");
-                btn.classList.remove("text-gray-300");
+                btn.classList.add("active");
             } else {
-                btn.classList.remove("bg-gold-500", "text-black");
-                btn.classList.add("text-gray-300");
+                btn.classList.remove("active");
             }
         }
     }
+
+    // Show floating back button
+    const backBtn = document.getElementById("floating-back-btn");
+    if (backBtn) backBtn.classList.remove("hidden");
 
     const panel = document.getElementById("inspect-panel");
     panel.classList.remove("hidden");
@@ -1377,28 +1333,25 @@ function updateInspectPriceDisplay() {
 function closeInspectPanel() {
     playSfx('click');
     document.getElementById("inspect-panel").classList.add("hidden");
+    const backBtn = document.getElementById("floating-back-btn");
+    if (backBtn) backBtn.classList.add("hidden");
+
     GAME.mode = 'STORE';
 
     for (let i = 0; i < 5; i++) {
-        const btn = document.getElementById(`nav-btn-${i}`);
-        if (btn) {
-            btn.classList.remove("bg-gold-500", "text-black");
-            btn.classList.add("text-gray-300");
-        }
+        const btn = document.getElementById(`scent-btn-${i}`);
+        if (btn) btn.classList.remove("active");
     }
-}
 
-function sprayCurrentPerfume() {
-    const pIndex = GAME.activePerfumeIndex;
-    const bottle = bottleMeshes[pIndex];
-    const capGroup = bottleCaps[pIndex];
-
-    if (bottle) {
-        const worldPos = new THREE.Vector3();
-        bottle.getWorldPosition(worldPos);
-        worldPos.y += 0.76 * (GAME.selectedSize === 50 ? 0.88 : 1.0);
-        worldPos.z += 0.12;
-        triggerSprayEffect(worldPos, capGroup, pIndex);
+    // Reset camera to wide overview
+    const isMobile = window.innerWidth < 640;
+    targetCamPos.set(0, isMobile ? 3.2 : 2.7, isMobile ? 12.5 : 9.8);
+    targetLookAt.set(0, 1.8, 0);
+    isTransitioningCam = true;
+    if (orbitControls) {
+        orbitControls.enabled = false;
+        orbitControls.minDistance = 2.2;
+        orbitControls.maxDistance = 16.0;
     }
 }
 
@@ -1577,6 +1530,10 @@ function openCartDrawer() {
     drawer.classList.remove("cart-closed");
     drawer.classList.add("cart-open");
     renderCartUI();
+
+    try {
+        window.history.pushState({ view: 'cart' }, '');
+    } catch (e) {}
 }
 
 function closeCartDrawer() {
@@ -1594,6 +1551,9 @@ function openCheckoutModal() {
     playSfx('click');
     closeCartDrawer();
     document.getElementById("checkout-modal").classList.remove("hidden");
+    try {
+        window.history.pushState({ view: 'checkout' }, '');
+    } catch (e) {}
 }
 
 function closeCheckoutModal() {
@@ -1834,9 +1794,9 @@ function onWindowResize() {
     const height = window.innerHeight;
     camera.aspect = width / height;
 
-    // Dynamically adjust FOV based on aspect ratio (wider for portrait mobile)
+    // Dynamically adjust FOV based on aspect ratio
     if (camera.aspect < 1.0) {
-        camera.fov = 48; // Mobile portrait
+        camera.fov = 52; // Mobile portrait
     } else {
         camera.fov = 38; // Desktop landscape
     }
@@ -1847,7 +1807,7 @@ function onWindowResize() {
 
     if (GAME.mode === 'STORE') {
         const isMobile = width < 640;
-        targetCamPos.set(0, isMobile ? 3.2 : 2.7, isMobile ? 12.0 : 9.8);
+        targetCamPos.set(0, isMobile ? 3.2 : 2.7, isMobile ? 12.5 : 9.8);
         targetLookAt.set(0, 1.8, 0);
         camera.position.copy(targetCamPos);
     }
