@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full select-none overflow-hidden">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Perfume Kompany | Haute Parfumerie</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            300: '#fde047',
+                            400: '#F5D061',
+                            500: '#D4AF37',
+                            600: '#AA8012'
+                        }
+                    },
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        montserrat: ['Montserrat', 'sans-serif'],
+                        orbitron: ['Orbitron', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Montserrat:wght@300;400;500;600;700&family=Orbitron:wght@600;700;900&display=swap" rel="stylesheet">
+    <!-- Local Three.js and OrbitControls -->
+    <script src="js/three.min.js"></script>
+    <script src="js/OrbitControls.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#060608] text-white font-['Montserrat'] h-full w-full overflow-hidden">
+
+    <!-- 3D WEBGL CANVAS CONTAINER -->
+    <div id="canvas-container" class="absolute inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"></div>
+
+    <!-- SCREEN FADER (For smooth transitions) -->
+    <div id="screen-fader" class="absolute inset-0 bg-[#060608] z-30 opacity-0 pointer-events-none transition-opacity duration-600"></div>
+
+    <!-- FLOATING TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col items-center space-y-2 w-11/12 max-w-sm"></div>
+
+    <!-- ========================================== -->
+    <!-- SIMPLE, MINIMALIST LUXURY LANDING SCREEN -->
+    <!-- ========================================== -->
+    <div id="title-screen" class="absolute inset-0 z-40 bg-[#060608] flex flex-col justify-between items-center p-6 sm:p-14 safe-top safe-bottom transition-opacity duration-700">
+        <!-- Top Spacer -->
+        <div class="w-full flex justify-end">
+            <button onclick="toggleSound()" class="p-2 sm:p-2.5 bg-white/5 hover:bg-gold-500 hover:text-black rounded-full border border-white/10 transition text-gold-400 flex items-center space-x-2">
+                <i data-lucide="volume-2" id="sound-icon-title" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <!-- Center Hero: Clean, Prestigious, Minimalist -->
+        <div class="flex flex-col items-center text-center space-y-5 sm:space-y-8 max-w-lg my-auto">
+            <!-- Official 3D Gold Logo -->
+            <img src="images/pk-logo.jpg" alt="Perfume Kompany Logo" class="w-20 h-20 sm:w-28 sm:h-28 rounded-2xl object-cover border border-gold-500/50 gold-halo">
+
+            <div class="space-y-1.5 sm:space-y-2">
+                <h1 class="font-['Cinzel'] text-xl sm:text-4xl font-extrabold tracking-[0.25em] sm:tracking-[0.3em] text-white">
+                    PERFUME<span class="text-gold-400 font-black">KOMPANY</span>
+                </h1>
+                <p class="text-[10px] sm:text-xs uppercase tracking-[0.35em] sm:tracking-[0.45em] text-gold-400/90 font-medium">
+                    Haute Parfumerie • Pure Extrait
+                </p>
+            </div>
+
+            <!-- Single Clean Call to Action Button -->
+            <div class="pt-2 sm:pt-4">
+                <button onclick="enterStore()" class="gold-shimmer-btn text-black font-extrabold text-xs sm:text-sm uppercase tracking-[0.2em] sm:tracking-[0.25em] px-8 py-3.5 sm:px-12 sm:py-4.5 rounded-full shadow-[0_0_35px_rgba(212,175,55,0.45)] transition transform hover:scale-105 active:scale-95 flex items-center justify-center space-x-2.5 cursor-pointer group">
+                    <span>ENTER THE STORE</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4 stroke-[2.5] text-black transition transform group-hover:translate-x-1"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bottom Minimalist Subtext -->
+        <div class="text-[9px] sm:text-[10px] tracking-[0.25em] sm:tracking-[0.3em] text-gray-500 uppercase font-semibold text-center">
+            35% Pure Extrait De Parfum • Interactive 3D Salon
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- STORE TOP NAVIGATION & CONTROLS HUD -->
+    <!-- ========================================== -->
+    <div id="store-hud" class="absolute inset-x-0 top-0 z-20 pointer-events-none p-3 sm:p-6 safe-top flex flex-col justify-between h-full hidden">
+
+        <!-- Top Header Bar -->
+        <div class="flex items-center justify-between w-full pointer-events-auto">
+            <!-- Brand Badge -->
+            <div class="flex items-center space-x-2 sm:space-x-3 glass-panel px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-2xl shadow-2xl cursor-pointer" onclick="resetToOverviewCamera()">
+                <img src="images/pk-logo.jpg" alt="Logo" class="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl object-cover border border-gold-500/50">
+                <div>
+                    <span class="font-['Cinzel'] font-bold text-[10px] sm:text-xs tracking-wider sm:tracking-widest text-white block">PERFUME<span class="text-gold-400">KOMPANY</span></span>
+                    <span class="text-[7px] sm:text-[8px] uppercase tracking-wider text-gold-400/80 font-bold hidden sm:block">FLAGSHIP SALON</span>
+                </div>
+            </div>
+
+            <!-- 5 Perfumes Quick Selector Bar (Hidden on Mobile, Visible on Desktop) -->
+            <div class="hidden lg:flex items-center space-x-1.5 glass-panel p-1.5 rounded-2xl shadow-2xl">
+                <button onclick="inspectPerfume(0)" id="nav-btn-0" class="px-3.5 py-1.5 rounded-xl hover:bg-gold-500 hover:text-black text-xs font-bold transition flex items-center space-x-1.5 text-gray-300">
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                    <span>One Billion</span>
+                </button>
+                <button onclick="inspectPerfume(1)" id="nav-btn-1" class="px-3.5 py-1.5 rounded-xl hover:bg-gold-500 hover:text-black text-xs font-bold transition flex items-center space-x-1.5 text-gray-300">
+                    <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+                    <span>Bleu Mist</span>
+                </button>
+                <button onclick="inspectPerfume(2)" id="nav-btn-2" class="px-3.5 py-1.5 rounded-xl hover:bg-gold-500 hover:text-black text-xs font-bold transition flex items-center space-x-1.5 text-gray-300">
+                    <span class="w-2 h-2 rounded-full bg-lime-500"></span>
+                    <span>Paradoxe</span>
+                </button>
+                <button onclick="inspectPerfume(3)" id="nav-btn-3" class="px-3.5 py-1.5 rounded-xl hover:bg-gold-500 hover:text-black text-xs font-bold transition flex items-center space-x-1.5 text-gray-300">
+                    <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                    <span>10000 Wishes</span>
+                </button>
+                <button onclick="inspectPerfume(4)" id="nav-btn-4" class="px-3.5 py-1.5 rounded-xl hover:bg-gold-500 hover:text-black text-xs font-bold transition flex items-center space-x-1.5 text-gray-300">
+                    <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+                    <span>Eterna Flora</span>
+                </button>
+            </div>
+
+            <!-- Right Controls: Ambience, Salon View, Auto-Rotate, Consult, Audio, CART -->
+            <div class="flex items-center space-x-1.5 sm:space-x-2 pointer-events-auto">
+                <!-- Ambience Lighting Switcher -->
+                <button onclick="cycleAmbience()" id="ambience-btn" class="p-2 sm:px-3 sm:py-2 glass-panel hover:bg-white/15 text-white rounded-xl transition flex items-center space-x-1.5 text-xs font-bold shadow-lg" title="Change Store Ambience">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-gold-400"></i>
+                    <span id="ambience-label" class="hidden md:inline">Midnight Gold</span>
+                </button>
+
+                <button onclick="resetToOverviewCamera()" class="p-2 sm:px-3 sm:py-2 glass-panel hover:bg-white/15 text-white rounded-xl transition flex items-center space-x-1.5 text-xs font-bold shadow-lg" title="View Full Salon">
+                    <i data-lucide="eye" class="w-3.5 h-3.5 text-gold-400"></i>
+                    <span class="hidden md:inline">Salon View</span>
+                </button>
+
+                <button onclick="toggleTurntable()" id="turntable-btn" class="p-2 sm:px-3 sm:py-2 glass-panel hover:bg-white/15 text-white rounded-xl transition items-center space-x-1.5 text-xs font-bold shadow-lg hidden sm:flex" title="Toggle Auto 360 Rotation">
+                    <i data-lucide="rotate-cw" class="w-3.5 h-3.5 text-gold-400"></i>
+                    <span class="hidden md:inline">360°</span>
+                </button>
+
+                <button onclick="openDialogueModal()" class="p-2 sm:px-3 sm:py-2 bg-purple-950/80 hover:bg-purple-900 text-white rounded-xl border border-purple-500/40 transition flex items-center space-x-1.5 text-xs font-bold shadow-lg" title="Fragrance Concierge">
+                    <i data-lucide="sparkle" class="w-3.5 h-3.5 text-purple-300"></i>
+                    <span class="hidden md:inline">Theo</span>
+                </button>
+
+                <button onclick="toggleSound()" class="p-2 sm:p-2.5 glass-panel hover:bg-white/15 text-gold-400 rounded-xl transition shadow-lg" title="Toggle Sound">
+                    <i data-lucide="volume-2" id="sound-icon-store" class="w-4 h-4"></i>
+                </button>
+
+                <!-- SHOPPING BAG / CART BUTTON WITH LIVE COUNTER -->
+                <button onclick="openCartDrawer()" id="cart-nav-btn" class="px-3 py-1.5 sm:px-4 sm:py-2 bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 hover:to-amber-500 text-black font-extrabold rounded-xl shadow-[0_0_20px_rgba(212,175,55,0.4)] transition transform hover:scale-105 active:scale-95 flex items-center space-x-1.5 sm:space-x-2 text-[10px] sm:text-xs uppercase tracking-wider cursor-pointer">
+                    <i data-lucide="shopping-bag" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-black stroke-[2.5]"></i>
+                    <span id="cart-nav-count">BAG (0)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- FLOATING PREV / NEXT FLACON CAROUSEL CHEVRONS -->
+        <button onclick="prevPerfume()" class="floating-arrow absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3.5 rounded-full text-gold-400 pointer-events-auto cursor-pointer" title="Previous Flacon">
+            <i data-lucide="chevron-left" class="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]"></i>
+        </button>
+        <button onclick="nextPerfume()" class="floating-arrow absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3.5 rounded-full text-gold-400 pointer-events-auto cursor-pointer" title="Next Flacon">
+            <i data-lucide="chevron-right" class="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]"></i>
+        </button>
+
+        <!-- Center Bottom Floating Interaction Bar -->
+        <div id="interact-prompt" class="self-center pointer-events-auto mb-2 sm:mb-4 safe-bottom flex items-center space-x-2 sm:space-x-3">
+            <button onclick="sprayCurrentPerfume()" class="px-5 py-2.5 sm:px-6 sm:py-3 bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 hover:to-amber-500 text-black font-extrabold uppercase text-[11px] sm:text-xs tracking-wider rounded-full shadow-[0_0_25px_rgba(212,175,55,0.5)] transition transform hover:scale-105 active:scale-95 flex items-center space-x-2 cursor-pointer">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-black"></i>
+                <span>TEST SPRAY MIST</span>
+            </button>
+            <div class="glass-panel px-4 py-2.5 sm:px-5 sm:py-3 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-300 hidden md:flex items-center space-x-2">
+                <i data-lucide="move" class="w-3.5 h-3.5 text-gold-400"></i>
+                <span>DRAG TO ORBIT 360°</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 3D PERFUME INSPECT PANEL (Responsive Mobile Bottom-Sheet / Desktop Side Drawer) -->
+    <!-- ========================================== -->
+    <div id="inspect-panel" class="fixed inset-x-3 bottom-3 sm:inset-x-auto sm:top-20 sm:right-6 sm:bottom-6 w-auto sm:w-full max-w-sm sm:max-w-md max-h-[72vh] sm:max-h-[85vh] z-30 glass-panel rounded-3xl p-4 sm:p-6 shadow-[0_0_60px_rgba(0,0,0,0.95)] flex flex-col justify-between hidden pointer-events-auto overflow-y-auto safe-bottom">
+        <div class="space-y-3.5">
+            <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
+                <span id="inspect-tag" class="text-gold-400 font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-widest">SLOT 01 // 100 ML EXTRAIT</span>
+                <button onclick="closeInspectPanel()" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <!-- High-Res Bottle Photograph Display -->
+            <div class="relative w-full h-36 sm:h-44 rounded-2xl overflow-hidden border border-gold-500/30 bg-black/70 flex items-center justify-center p-2 group shadow-inner">
+                <img id="inspect-bottle-img" src="images/one-billion.jpg" class="h-full w-auto object-contain filter drop-shadow-[0_10px_25px_rgba(212,175,55,0.4)] transition transform group-hover:scale-105 duration-300" alt="Perfume Bottle">
+                <span class="absolute bottom-2 right-2 bg-black/90 px-2 py-0.5 rounded-lg text-[8px] sm:text-[9px] font-mono text-gold-400 uppercase tracking-widest border border-gold-500/30">35% PURE EXTRAIT</span>
+            </div>
+
+            <div>
+                <h3 id="inspect-name" class="font-['Cinzel'] text-xl sm:text-2xl font-black text-white uppercase tracking-wide">ONE BILLION</h3>
+                <p id="inspect-subtitle" class="text-[11px] sm:text-xs text-gray-400 italic mt-0.5">"The Signature Scent of Pure Wealth & Dominance"</p>
+            </div>
+
+            <!-- Flacon Size Selector (50 ML vs 100 ML) -->
+            <div class="bg-black/60 p-2.5 sm:p-3 rounded-2xl border border-white/10 space-y-1.5 sm:space-y-2">
+                <span class="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-wider block font-bold">Select Flacon Volume:</span>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="selectBottleSize(50)" id="size-btn-50" class="size-btn py-1.5 sm:py-2 px-3 rounded-xl border border-white/20 text-xs font-bold transition flex items-center justify-between text-gray-300 hover:bg-white/10">
+                        <span>50 ML</span>
+                        <span id="size-price-50" class="text-gold-400 font-mono">$125</span>
+                    </button>
+                    <button onclick="selectBottleSize(100)" id="size-btn-100" class="size-btn active py-1.5 sm:py-2 px-3 rounded-xl border border-white/20 text-xs font-bold transition flex items-center justify-between text-gray-300 hover:bg-white/10">
+                        <span>100 ML</span>
+                        <span id="size-price-100" class="text-gold-400 font-mono">$165</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notes Breakdown with Interactive Pills -->
+            <div class="space-y-1.5 sm:space-y-2 bg-black/70 p-3 sm:p-3.5 rounded-2xl border border-white/10 text-[11px] sm:text-xs">
+                <div class="flex items-start space-x-2">
+                    <span class="text-gold-400 font-bold w-12 sm:w-14 shrink-0 uppercase tracking-wider">TOP:</span>
+                    <span id="inspect-top" class="text-gray-200">Blood Mandarin, Frosted Grapefruit</span>
+                </div>
+                <div class="flex items-start space-x-2">
+                    <span class="text-amber-400 font-bold w-12 sm:w-14 shrink-0 uppercase tracking-wider">HEART:</span>
+                    <span id="inspect-heart" class="text-gray-200">Blonde Tuscan Leather, Cinnamon Bark</span>
+                </div>
+                <div class="flex items-start space-x-2">
+                    <span class="text-purple-400 font-bold w-12 sm:w-14 shrink-0 uppercase tracking-wider">BASE:</span>
+                    <span id="inspect-base" class="text-gray-200">Amber Ketals, White Woods, Patchouli</span>
+                </div>
+            </div>
+
+            <!-- Performance Stats -->
+            <div class="grid grid-cols-3 gap-1.5 sm:gap-2 text-center text-xs">
+                <div class="bg-black/60 p-2 sm:p-2.5 rounded-xl border border-white/5">
+                    <span class="text-[8px] sm:text-[9px] uppercase text-gray-400 block tracking-wider">Longevity</span>
+                    <span id="inspect-longevity" class="text-gold-400 font-bold text-[10px] sm:text-xs">16+ Hours</span>
+                </div>
+                <div class="bg-black/60 p-2 sm:p-2.5 rounded-xl border border-white/5">
+                    <span class="text-[8px] sm:text-[9px] uppercase text-gray-400 block tracking-wider">Sillage</span>
+                    <span id="inspect-sillage" class="text-purple-400 font-bold text-[10px] sm:text-xs">Room-Filling</span>
+                </div>
+                <div class="bg-black/60 p-2 sm:p-2.5 rounded-xl border border-white/5">
+                    <span class="text-[8px] sm:text-[9px] uppercase text-gray-400 block tracking-wider">Extrait</span>
+                    <span id="inspect-danger" class="text-green-400 font-bold text-[10px] sm:text-xs">35% Pure</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quantity, Pricing & Cart Action Buttons -->
+        <div class="space-y-2.5 pt-3 border-t border-white/10">
+            <!-- Quantity and Price Row -->
+            <div class="flex items-center justify-between bg-black/60 p-2.5 sm:p-3 rounded-2xl border border-white/5">
+                <div>
+                    <span class="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-wider block">Price</span>
+                    <span id="inspect-price" class="text-xl sm:text-2xl font-black text-gold-400 font-['Orbitron']">$165</span>
+                </div>
+                <!-- Quantity Stepper -->
+                <div class="flex items-center space-x-2.5 bg-white/5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-white/10">
+                    <button onclick="adjustInspectQty(-1)" class="text-gray-400 hover:text-white font-bold text-base px-1.5">-</button>
+                    <span id="inspect-qty" class="font-mono text-xs sm:text-sm font-bold text-white w-4 text-center">1</span>
+                    <button onclick="adjustInspectQty(1)" class="text-gray-400 hover:text-white font-bold text-base px-1.5">+</button>
+                </div>
+            </div>
+
+            <!-- Primary Action: Add to Bag -->
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="addCurrentToCart()" class="gold-shimmer-btn py-3 px-3 sm:px-4 text-black font-extrabold uppercase text-[11px] sm:text-xs tracking-wider rounded-xl shadow-[0_0_20px_rgba(212,175,55,0.4)] transition transform hover:scale-[1.02] active:scale-95 flex items-center justify-center space-x-1.5 sm:space-x-2 cursor-pointer">
+                    <i data-lucide="shopping-bag" class="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]"></i>
+                    <span>ADD TO BAG</span>
+                </button>
+                <button onclick="buyNowCurrent()" class="py-3 px-3 sm:px-4 bg-white/10 hover:bg-white/20 text-white font-extrabold uppercase text-[11px] sm:text-xs tracking-wider rounded-xl border border-white/20 transition flex items-center justify-center space-x-1.5 sm:space-x-2 cursor-pointer active:scale-95">
+                    <i data-lucide="credit-card" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold-400"></i>
+                    <span>BUY NOW</span>
+                </button>
+            </div>
+
+            <!-- Test Spray Atomizer Button -->
+            <button onclick="sprayCurrentPerfume()" class="w-full py-2 bg-black/40 hover:bg-white/10 text-gray-300 hover:text-white rounded-xl border border-white/10 font-bold text-[10px] sm:text-xs uppercase tracking-wider flex items-center justify-center space-x-1.5 transition cursor-pointer active:scale-95">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-gold-400"></i>
+                <span>Test Spray Mist</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SLIDE-OVER SHOPPING BAG / CART DRAWER -->
+    <!-- ========================================== -->
+    <div id="cart-drawer" class="cart-closed fixed inset-y-0 right-0 w-full max-w-md sm:max-w-lg z-50 glass-panel border-l border-gold-500/30 flex flex-col justify-between shadow-[0_0_80px_rgba(0,0,0,0.95)] safe-top safe-bottom">
+        <!-- Cart Header -->
+        <div class="p-4 sm:p-6 border-b border-white/10 flex items-center justify-between">
+            <div class="flex items-center space-x-2.5 sm:space-x-3">
+                <div class="p-2 rounded-xl bg-gold-500/10 border border-gold-500/30 text-gold-400">
+                    <i data-lucide="shopping-bag" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                </div>
+                <div>
+                    <h2 class="font-['Cinzel'] text-lg sm:text-xl font-bold text-white tracking-wider">YOUR BESPOKE BAG</h2>
+                    <span id="cart-item-count-sub" class="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-widest block">0 ITEMS SELECTED</span>
+                </div>
+            </div>
+            <button onclick="closeCartDrawer()" class="text-gray-400 hover:text-white p-2 rounded-xl hover:bg-white/10 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <!-- Cart Items List (Scrollable) -->
+        <div id="cart-items-list" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 sm:space-y-4">
+            <!-- Dynamically populated in game.js -->
+        </div>
+
+        <!-- Cart Perks Banner -->
+        <div class="px-4 sm:px-6 py-2.5 sm:py-3 bg-black/60 border-y border-white/5 text-[10px] sm:text-[11px] text-gray-300 space-y-1">
+            <div class="flex items-center space-x-2">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-gold-400 shrink-0"></i>
+                <span>Complimentary Express Courier & Insured Dispatch</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <i data-lucide="award" class="w-3.5 h-3.5 text-gold-400 shrink-0"></i>
+                <span>35% Pure Extrait Hand-Poured Authenticity Certificate</span>
+            </div>
+        </div>
+
+        <!-- Cart Footer & Summary -->
+        <div class="p-4 sm:p-6 border-t border-white/10 space-y-3 sm:space-y-4 bg-black/80">
+            <div class="space-y-1 text-xs">
+                <div class="flex justify-between text-gray-400">
+                    <span>Subtotal</span>
+                    <span id="cart-subtotal" class="font-mono text-white font-bold">$0</span>
+                </div>
+                <div class="flex justify-between text-gray-400">
+                    <span>VIP Courier Shipping</span>
+                    <span class="text-green-400 font-bold uppercase text-[9px] sm:text-[10px]">COMPLIMENTARY</span>
+                </div>
+                <div class="flex justify-between text-sm font-bold pt-1.5 border-t border-white/10">
+                    <span class="text-white uppercase font-['Cinzel'] tracking-wider">Total</span>
+                    <span id="cart-total" class="font-mono text-lg sm:text-xl font-black text-gold-400">$0</span>
+                </div>
+            </div>
+
+            <!-- Checkout Action Buttons -->
+            <div class="space-y-2">
+                <button onclick="openCheckoutModal()" id="cart-checkout-btn" class="gold-shimmer-btn w-full py-3.5 sm:py-4 text-black font-extrabold uppercase text-[11px] sm:text-xs tracking-widest rounded-2xl shadow-[0_0_25px_rgba(212,175,55,0.45)] transition transform hover:scale-[1.02] active:scale-95 flex items-center justify-center space-x-2 cursor-pointer">
+                    <span>PROCEED TO CHECKOUT</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4 stroke-[2.5]"></i>
+                </button>
+                <button onclick="closeCartDrawer()" class="w-full py-2 text-center text-[11px] sm:text-xs text-gray-400 hover:text-white uppercase tracking-wider font-semibold transition">
+                    Continue Exploring Flacons
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- CHECKOUT MODAL -->
+    <!-- ========================================== -->
+    <div id="checkout-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 hidden pointer-events-auto overflow-y-auto safe-top safe-bottom">
+        <div class="glass-panel border-2 border-gold-500/40 rounded-3xl p-5 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 sm:space-y-6 my-auto max-h-[92vh] overflow-y-auto">
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b border-white/10 pb-3 sm:pb-4">
+                <div class="flex items-center space-x-3">
+                    <img src="images/pk-logo.jpg" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-cover border border-gold-500/50">
+                    <div>
+                        <h3 class="font-['Cinzel'] text-base sm:text-lg font-bold text-white tracking-wider">CHECKOUT & DISPATCH</h3>
+                        <span class="text-[9px] sm:text-[10px] text-gold-400 uppercase tracking-widest">Perfume Kompany Concierge</span>
+                    </div>
+                </div>
+                <button onclick="closeCheckoutModal()" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Order Preview Summary -->
+            <div class="bg-black/60 p-3 sm:p-4 rounded-2xl border border-white/10 flex items-center justify-between text-xs">
+                <div>
+                    <span class="text-gray-400 block text-[9px] sm:text-[10px] uppercase tracking-wider">Order Value (<span id="checkout-item-count">0</span> items)</span>
+                    <span id="checkout-total-preview" class="font-mono text-base sm:text-lg font-black text-gold-400">$0</span>
+                </div>
+                <span class="px-2.5 py-0.5 bg-green-500/10 border border-green-500/30 text-green-400 text-[9px] sm:text-[10px] font-bold rounded-full uppercase tracking-wider">Free Express Delivery</span>
+            </div>
+
+            <!-- Customer Shipping Form -->
+            <form id="checkout-form" onsubmit="handleOrderSubmit(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-gray-300 font-semibold mb-1 uppercase tracking-wider text-[9px] sm:text-[10px]">Full Name *</label>
+                    <input type="text" id="cust-name" required placeholder="e.g. Alexander Vance" class="w-full bg-white/5 border border-white/15 focus:border-gold-500 rounded-xl px-3.5 py-2.5 sm:py-3 text-white placeholder-gray-500 outline-none transition">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                    <div>
+                        <label class="block text-gray-300 font-semibold mb-1 uppercase tracking-wider text-[9px] sm:text-[10px]">Phone / WhatsApp *</label>
+                        <input type="tel" id="cust-phone" required placeholder="+1 555 019 283" class="w-full bg-white/5 border border-white/15 focus:border-gold-500 rounded-xl px-3.5 py-2.5 sm:py-3 text-white placeholder-gray-500 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 font-semibold mb-1 uppercase tracking-wider text-[9px] sm:text-[10px]">City / Region *</label>
+                        <input type="text" id="cust-city" required placeholder="City / State" class="w-full bg-white/5 border border-white/15 focus:border-gold-500 rounded-xl px-3.5 py-2.5 sm:py-3 text-white placeholder-gray-500 outline-none transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 font-semibold mb-1 uppercase tracking-wider text-[9px] sm:text-[10px]">Delivery Address *</label>
+                    <input type="text" id="cust-address" required placeholder="Suite, Street, Building" class="w-full bg-white/5 border border-white/15 focus:border-gold-500 rounded-xl px-3.5 py-2.5 sm:py-3 text-white placeholder-gray-500 outline-none transition">
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 font-semibold mb-1 uppercase tracking-wider text-[9px] sm:text-[10px]">Payment Method</label>
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <label class="flex items-center space-x-2 bg-white/5 p-2.5 sm:p-3 rounded-xl border border-white/10 cursor-pointer hover:border-gold-500 transition">
+                            <input type="radio" name="payment_method" value="cod" checked class="text-gold-500 focus:ring-0">
+                            <span class="text-gray-200 font-medium text-[11px] sm:text-xs">Pay on Delivery</span>
+                        </label>
+                        <label class="flex items-center space-x-2 bg-white/5 p-2.5 sm:p-3 rounded-xl border border-white/10 cursor-pointer hover:border-gold-500 transition">
+                            <input type="radio" name="payment_method" value="online" class="text-gold-500 focus:ring-0">
+                            <span class="text-gray-200 font-medium text-[11px] sm:text-xs">UPI / Card</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="pt-2 sm:pt-3 space-y-2">
+                    <button type="submit" class="gold-shimmer-btn w-full py-3.5 sm:py-4 text-black font-extrabold uppercase text-[11px] sm:text-xs tracking-widest rounded-2xl shadow-[0_0_30px_rgba(212,175,55,0.5)] transition transform hover:scale-[1.02] active:scale-95 flex items-center justify-center space-x-2 cursor-pointer">
+                        <i data-lucide="shield-check" class="w-4 h-4 stroke-[2.5]"></i>
+                        <span>CONFIRM & PLACE ORDER</span>
+                    </button>
+
+                    <!-- Direct WhatsApp Ordering -->
+                    <button type="button" onclick="orderViaWhatsApp()" class="w-full py-2.5 sm:py-3 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/40 rounded-2xl text-[11px] sm:text-xs font-bold uppercase tracking-wider transition flex items-center justify-center space-x-2 cursor-pointer active:scale-95">
+                        <i data-lucide="message-circle" class="w-4 h-4"></i>
+                        <span>Order Directly on WhatsApp</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- INTERACTIVE NPC DIALOGUE (Theo the Perfumer) -->
+    <!-- ========================================== -->
+    <div id="dialogue-modal" class="absolute inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-3 sm:p-4 hidden pointer-events-auto safe-bottom">
+        <div class="bg-gray-950 border-2 border-gold-500/50 rounded-3xl p-5 sm:p-8 max-w-xl w-full shadow-2xl space-y-3.5 sm:space-y-4 max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center space-x-3 sm:space-x-4 border-b border-white/10 pb-3">
+                <img src="images/pk-logo.jpg" class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-cover border border-gold-500/50">
+                <div>
+                    <h3 id="dialogue-speaker" class="font-['Cinzel'] text-base sm:text-lg font-bold text-gold-400">THEO (MASTER PERFUMER)</h3>
+                    <span class="text-[10px] sm:text-xs text-gray-400">Perfume Kompany Concierge</span>
+                </div>
+            </div>
+
+            <p id="dialogue-text" class="text-xs sm:text-base text-gray-200 leading-relaxed font-medium">
+                "Welcome to the private showroom of Perfume Kompany. Every extrait here is hand-poured at 35% concentration. Which olfactory direction are you looking to command?"
+            </p>
+
+            <div id="dialogue-options" class="space-y-2 pt-1 sm:pt-2">
+                <!-- Dialogue buttons dynamically populated in game.js -->
+            </div>
+
+            <div class="text-right pt-2 border-t border-white/10">
+                <button onclick="closeDialogueModal()" class="text-[10px] sm:text-xs text-gray-400 hover:text-white uppercase font-bold tracking-wider">Close Conversation [ESC]</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- ORDER SECURED / CELEBRATION OVERLAY -->
+    <!-- ========================================== -->
+    <div id="mission-passed-overlay" class="absolute inset-0 z-50 bg-black/90 backdrop-blur-xl flex items-center justify-center p-3 sm:p-4 hidden pointer-events-none transition-all duration-500 opacity-0 safe-top safe-bottom">
+        <div id="mission-passed-banner" class="max-w-xl w-full text-center space-y-4 sm:space-y-6 transform scale-75 transition-transform duration-500 pointer-events-auto">
+            
+            <div class="bg-black/95 border-y-4 border-gold-500 py-4 sm:py-6 px-4 shadow-[0_0_80px_rgba(212,175,55,0.6)]">
+                <div class="font-['Orbitron'] text-2xl sm:text-5xl font-black text-yellow-400 uppercase tracking-widest drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
+                    ORDER SECURED!
+                </div>
+                <div class="font-['Cinzel'] text-base sm:text-3xl font-extrabold text-white uppercase tracking-widest mt-1">
+                    WELCOME TO PERFUME KOMPANY
+                </div>
+            </div>
+
+            <div class="bg-black/85 border border-white/10 rounded-3xl p-5 sm:p-8 space-y-3 sm:space-y-4 shadow-2xl">
+                <div class="flex items-center justify-center space-x-3 sm:space-x-4">
+                    <img id="passed-bottle-img" src="images/one-billion.jpg" class="w-20 h-28 sm:w-24 sm:h-32 object-contain rounded-lg filter drop-shadow-[0_0_20px_rgba(212,175,55,0.6)]" alt="Purchased Perfume">
+                    <img src="images/pk-logo.jpg" class="w-12 h-12 sm:w-16 sm:h-16 rounded-xl object-cover border border-gold-500/50 shadow-md">
+                </div>
+                
+                <div class="text-gold-400 font-bold uppercase text-[10px] sm:text-xs tracking-widest">DISPATCH CONFIRMED</div>
+                <div id="passed-order-id" class="font-mono text-[10px] sm:text-xs text-gray-400">ORDER REF: #PK-89240</div>
+                <div id="passed-product-name" class="font-['Cinzel'] text-xl sm:text-2xl font-black text-white">ONE BILLION (100ml Extrait)</div>
+                <div id="passed-reward-cash" class="font-['Orbitron'] text-green-400 font-bold text-base sm:text-lg">VIP CONCIERGE DISPATCH</div>
+                <p class="text-xs sm:text-sm text-gray-400 max-w-md mx-auto">
+                    Dispatched from the private vault via express courier. Hand-poured 35% pure extrait de parfum engineered to command the room.
+                </p>
+
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3 pt-2 sm:pt-4">
+                    <button onclick="closeMissionPassed()" class="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-yellow-400 hover:bg-yellow-300 text-black font-extrabold uppercase text-[11px] sm:text-xs tracking-widest rounded-xl shadow-lg transition cursor-pointer active:scale-95">
+                        Explore More Scents in 3D
+                    </button>
+                    <button onclick="sendOrderReceiptWhatsApp()" class="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-3.5 bg-emerald-900/80 hover:bg-emerald-800 text-emerald-200 border border-emerald-500/40 font-bold uppercase text-[11px] sm:text-xs tracking-widest rounded-xl shadow-lg transition flex items-center justify-center space-x-2 cursor-pointer active:scale-95">
+                        <i data-lucide="message-circle" class="w-4 h-4"></i>
+                        <span>Receipt via WhatsApp</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Data Bundles and Main Game Script -->
+    <script src="js/perfume-data.js"></script>
+    <script src="game.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

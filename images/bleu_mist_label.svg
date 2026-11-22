@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1100" width="800" height="1100">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bgGrad" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#141824"/>
+      <stop offset="70%" stop-color="#0b0e14"/>
+      <stop offset="100%" stop-color="#05070a"/>
+    </radialGradient>
+
+    <!-- Metallic Gold Gradients -->
+    <linearGradient id="goldGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d4af37"/>
+      <stop offset="25%" stop-color="#fdf0cd"/>
+      <stop offset="50%" stop-color="#c99e32"/>
+      <stop offset="75%" stop-color="#f5e1a4"/>
+      <stop offset="100%" stop-color="#aa7c1e"/>
+    </linearGradient>
+
+    <linearGradient id="goldGradH" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#c99e32"/>
+      <stop offset="20%" stop-color="#fdf0cd"/>
+      <stop offset="50%" stop-color="#d4af37"/>
+      <stop offset="80%" stop-color="#fbf4dd"/>
+      <stop offset="100%" stop-color="#b8860b"/>
+    </linearGradient>
+
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Dark Label Body -->
+  <rect x="10" y="10" width="780" height="1080" rx="40" ry="40" fill="url(#bgGrad)"/>
+
+  <!-- Outer Double Gold Frame with Rounded Corners -->
+  <rect x="35" y="35" width="730" height="1030" rx="30" ry="30" fill="none" stroke="url(#goldGrad1)" stroke-width="4.5"/>
+  <rect x="52" y="52" width="696" height="996" rx="20" ry="20" fill="none" stroke="url(#goldGrad1)" stroke-width="2" opacity="0.85"/>
+
+  <!-- Brand Emblem / Perfume Bottle Silhouette with PK monogram -->
+  <g id="logo-emblem" transform="translate(400, 260)">
+    <!-- Sprayer Cap -->
+    <rect x="-35" y="-120" width="70" height="25" rx="4" fill="none" stroke="url(#goldGradH)" stroke-width="4"/>
+    <rect x="-18" y="-95" width="36" height="15" fill="none" stroke="url(#goldGradH)" stroke-width="3"/>
+    
+    <!-- Bottle Outline -->
+    <rect x="-65" y="-80" width="130" height="150" rx="16" fill="none" stroke="url(#goldGradH)" stroke-width="4.5"/>
+    <rect x="-56" y="-71" width="112" height="132" rx="10" fill="none" stroke="url(#goldGradH)" stroke-width="1.5" opacity="0.6"/>
+
+    <!-- PK Monogram -->
+    <!-- Stylized 'P' -->
+    <path d="M-22,-45 L-22,35 M-22,-45 C0,-45 8,-35 8,-15 C8,5 0,15 -22,15" fill="none" stroke="url(#goldGrad1)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Stylized 'K' overlapping -->
+    <path d="M-2,-20 L22,-45 M2,-3 L24,35" fill="none" stroke="url(#goldGrad1)" stroke-width="6" stroke-linecap="round"/>
+  </g>
+
+  <!-- Typography: PERFUME KOMPANY -->
+  <text x="400" y="480" text-anchor="middle" font-family="'Cinzel', 'Trajan Pro', 'Didot', 'Georgia', 'Arial', serif" font-size="34" font-weight="700" letter-spacing="12" fill="url(#goldGradH)">PERFUME</text>
+  <text x="400" y="525" text-anchor="middle" font-family="'Montserrat', 'Century Gothic', 'Arial', sans-serif" font-size="22" font-weight="600" letter-spacing="16" fill="url(#goldGradH)">KOMPANY</text>
+
+  <!-- Main Title: BLEU MIST -->
+  <g transform="translate(400, 720)">
+    <!-- Subtle Gold Drop Glow -->
+    <text x="0" y="0" text-anchor="middle" font-family="'Cinzel', 'Montserrat', 'Trajan Pro', 'Helvetica Neue', 'Arial', sans-serif" font-size="68" font-weight="800" letter-spacing="6" fill="#fdf0cd" filter="url(#goldGlow)" opacity="0.3">BLEU MIST</text>
+    <text x="0" y="0" text-anchor="middle" font-family="'Cinzel', 'Montserrat', 'Trajan Pro', 'Helvetica Neue', 'Arial', sans-serif" font-size="68" font-weight="800" letter-spacing="6" fill="url(#goldGradH)">BLEU MIST</text>
+  </g>
+
+  <!-- Subtitle: Extrait De Parfum -->
+  <text x="400" y="880" text-anchor="middle" font-family="'Playfair Display', 'Baskerville', 'Georgia', serif" font-size="34" font-style="italic" letter-spacing="3" fill="url(#goldGrad1)">Extrait De Parfum</text>
+
+  <!-- Decorative bottom micro-accent -->
+  <circle cx="400" cy="940" r="3" fill="url(#goldGradH)"/>
+  <line x1="330" y1="940" x2="385" y2="940" stroke="url(#goldGrad1)" stroke-width="1"/>
+  <line x1="415" y1="940" x2="470" y2="940" stroke="url(#goldGrad1)" stroke-width="1"/>
+</svg>

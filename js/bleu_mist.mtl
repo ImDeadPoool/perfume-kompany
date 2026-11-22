@@ -1,0 +1,65 @@
+# BLEU MIST Material Library
+
+newmtl Glass_Material
+Ka 0.08 0.08 0.08
+Kd 0.92 0.96 1.00
+Ks 0.98 0.98 0.98
+Ns 200.0
+d 0.20
+Tr 0.80
+illum 4
+
+newmtl Liquid_Bleu_Material
+Ka 0.01 0.20 0.40
+Kd 0.00 0.55 0.90
+Ks 0.85 0.95 1.00
+Ns 120.0
+d 0.88
+Tr 0.12
+illum 4
+
+newmtl Label_Bleu_Mist_Material
+Ka 0.05 0.05 0.05
+Kd 0.90 0.90 0.90
+Ks 0.70 0.60 0.35
+Ns 80.0
+d 1.0
+illum 2
+map_Kd textures/bleu_mist_exact_label.png
+
+newmtl Gold_Knurled_Material
+Ka 0.40 0.32 0.12
+Kd 0.95 0.80 0.35
+Ks 0.98 0.90 0.55
+Ns 220.0
+d 1.0
+illum 2
+bump textures/gold_knurl_normal.png
+map_Bump textures/gold_knurl_normal.png
+
+newmtl Gold_Smooth_Material
+Ka 0.42 0.34 0.14
+Kd 0.98 0.84 0.38
+Ks 1.00 0.96 0.70
+Ns 260.0
+d 1.0
+illum 2
+
+newmtl Plastic_Tube_Material
+Ka 0.15 0.15 0.15
+Kd 0.85 0.92 0.98
+Ks 0.60 0.60 0.60
+Ns 50.0
+d 0.40
+Tr 0.60
+illum 4
+
+newmtl Dark_Rock_Material
+Ka 0.05 0.06 0.08
+Kd 0.12 0.15 0.18
+Ks 0.50 0.55 0.65
+Ns 60.0
+d 1.0
+illum 2
+map_Kd textures/rock_pedestal_exact.png
+
