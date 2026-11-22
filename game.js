@@ -212,6 +212,7 @@ const textureLoader = new THREE.TextureLoader();
 // Target Camera Positions for Smooth Gliding
 const targetCamPos = new THREE.Vector3(0, 2.7, 9.8);
 const targetLookAt = new THREE.Vector3(0, 1.8, 0);
+const currentLookAt = new THREE.Vector3(0, 1.8, 0);
 let isTransitioningCam = false;
 
 // Soft Golden Stardust / Amber Bokeh Particle Texture
@@ -513,11 +514,13 @@ function init3D() {
 
     const isMobile = width < 640;
     if (isMobile) {
-        targetCamPos.set(0, 3.2, 11.5);
+        targetCamPos.set(0, 3.2, 12.5);
     } else {
         targetCamPos.set(0, 2.7, 9.8);
     }
     camera.position.copy(targetCamPos);
+    currentLookAt.copy(targetLookAt);
+    camera.lookAt(currentLookAt);
 
     renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     renderer.setSize(width, height);
@@ -551,6 +554,13 @@ function init3D() {
     mainDirectionalLight.castShadow = true;
     mainDirectionalLight.shadow.mapSize.width = 2048;
     mainDirectionalLight.shadow.mapSize.height = 2048;
+    mainDirectionalLight.shadow.camera.left = -9;
+    mainDirectionalLight.shadow.camera.right = 9;
+    mainDirectionalLight.shadow.camera.top = 9;
+    mainDirectionalLight.shadow.camera.bottom = -9;
+    mainDirectionalLight.shadow.camera.near = 1;
+    mainDirectionalLight.shadow.camera.far = 25;
+    mainDirectionalLight.shadow.bias = -0.0005;
     scene.add(mainDirectionalLight);
 
     setupStudioEnvironment();
@@ -948,30 +958,60 @@ function setupInputListeners() {
     let touchStartX = 0;
     let touchStartY = 0;
     let touchStartTime = 0;
+    let isHorizontalSwipe = false;
 
     window.addEventListener("pointerdown", (event) => {
         touchStartX = event.clientX;
         touchStartY = event.clientY;
         touchStartTime = Date.now();
+        isHorizontalSwipe = false;
+    }, { passive: true });
+
+    window.addEventListener("pointermove", (event) => {
+        if (!touchStartTime || isTransitioningCam) return;
+        const dx = event.clientX - touchStartX;
+        const dy = event.clientY - touchStartY;
+
+        // Immediately detect horizontal carousel swipe intent and disengage OrbitControls
+        // This stops OrbitControls from twisting the camera sideways during a swipe gesture!
+        if (!isHorizontalSwipe && Math.abs(dx) > 20 && Math.abs(dx) > Math.abs(dy) * 1.3) {
+            isHorizontalSwipe = true;
+            if (orbitControls) {
+                orbitControls.enabled = false;
+            }
+        }
     }, { passive: true });
 
     window.addEventListener("pointerup", (event) => {
+        const dt = Date.now() - touchStartTime;
+        touchStartTime = 0;
+
         if (GAME.mode !== 'STORE' && GAME.mode !== 'INSPECT') return;
-        if (event.target.tagName === 'BUTTON' || event.target.closest('#inspect-panel, #cart-drawer, #checkout-modal, #dialogue-modal, #mission-passed-overlay')) return;
+        if (event.target.tagName === 'BUTTON' || event.target.closest('#inspect-panel, #cart-drawer, #checkout-modal, #dialogue-modal, #mission-passed-overlay')) {
+            isHorizontalSwipe = false;
+            return;
+        }
 
         const dx = event.clientX - touchStartX;
         const dy = event.clientY - touchStartY;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        const dt = Date.now() - touchStartTime;
 
-        // Mobile Horizontal Swipe Gesture Detection
-        if (Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.5 && dt < 450) {
+        // Mobile Horizontal Swipe Triggered
+        if (isHorizontalSwipe || (Math.abs(dx) > 35 && Math.abs(dx) > Math.abs(dy) * 1.2 && dt < 600)) {
+            isHorizontalSwipe = false;
             if (dx < 0) {
                 nextPerfume(); // Swipe Left -> Next Flacon
             } else {
                 prevPerfume(); // Swipe Right -> Prev Flacon
             }
             return;
+        }
+
+        isHorizontalSwipe = false;
+
+        // Re-enable OrbitControls if it was disengaged during a drag
+        if (!isTransitioningCam && orbitControls && !orbitControls.enabled) {
+            orbitControls.enabled = true;
         }
 
         // Tap Detection (< 14px movement and < 350ms duration)
@@ -1029,7 +1069,7 @@ function animate() {
     const delta = clock.getDelta();
     const time = clock.getElapsedTime();
 
-    // Turntable Auto-Rotation or Idle Shimmer
+    // Turntable Auto-Rotation or Idle Breathing Shimmer
     if (GAME.turntableActive && GAME.mode === 'INSPECT') {
         const currentBottle = bottleMeshes[GAME.activePerfumeIndex];
         if (currentBottle) {
@@ -1037,7 +1077,7 @@ function animate() {
         }
     } else if (GAME.mode === 'INSPECT') {
         const currentBottle = bottleMeshes[GAME.activePerfumeIndex];
-        if (currentBottle) {
+        if (currentBottle && !isTransitioningCam) {
             currentBottle.rotation.y += 0.002;
         }
     } else if (GAME.mode === 'STORE') {
@@ -1063,11 +1103,16 @@ function animate() {
         ambientStardust.geometry.attributes.position.needsUpdate = true;
     }
 
-    // Smooth camera glide
+    // Smooth camera glide with dynamic lookAt tracking (Direct, instantaneous, no weird angles)
     if (isTransitioningCam) {
-        camera.position.lerp(targetCamPos, 0.08);
-        if (camera.position.distanceTo(targetCamPos) < 0.03) {
+        camera.position.lerp(targetCamPos, 0.18);
+        currentLookAt.lerp(targetLookAt, 0.18);
+        camera.lookAt(currentLookAt);
+
+        if (camera.position.distanceTo(targetCamPos) < 0.015 && currentLookAt.distanceTo(targetLookAt) < 0.015) {
             camera.position.copy(targetCamPos);
+            currentLookAt.copy(targetLookAt);
+            camera.lookAt(targetLookAt);
             isTransitioningCam = false;
             if (orbitControls) {
                 orbitControls.target.copy(targetLookAt);
@@ -1075,10 +1120,9 @@ function animate() {
                 orbitControls.update();
             }
         }
-    }
-
-    if (orbitControls && orbitControls.enabled) {
+    } else if (orbitControls && orbitControls.enabled) {
         orbitControls.update();
+        currentLookAt.copy(orbitControls.target);
     }
 
     renderer.render(scene, camera);
@@ -1111,11 +1155,14 @@ function enterStore() {
         targetCamPos.set(0, isMobile ? 3.2 : 2.7, isMobile ? 12.5 : 9.8);
         targetLookAt.set(0, 1.8, 0);
         camera.position.copy(targetCamPos);
+        currentLookAt.copy(targetLookAt);
+        camera.lookAt(currentLookAt);
         if (orbitControls) {
             orbitControls.target.copy(targetLookAt);
             orbitControls.minDistance = 2.2;
             orbitControls.maxDistance = 16.0;
             orbitControls.enabled = true;
+            orbitControls.update();
         }
 
         fader.classList.remove("opacity-100");
@@ -1145,6 +1192,8 @@ function returnToEntrance() {
         targetCamPos.set(0, 2.7, 9.8);
         targetLookAt.set(0, 1.8, 0);
         camera.position.copy(targetCamPos);
+        currentLookAt.copy(targetLookAt);
+        camera.lookAt(currentLookAt);
 
         fader.classList.remove("opacity-100");
         fader.classList.add("opacity-0", "pointer-events-none");
@@ -1212,9 +1261,9 @@ function inspectPerfume(index) {
         window.history.pushState({ view: 'inspect', index }, '');
     } catch (e) {}
 
-    // Reset rotation of other bottles
-    bottleMeshes.forEach((b, idx) => {
-        if (idx !== index) b.rotation.y = 0;
+    // Reset rotation of all bottles to pristine front orientation
+    bottleMeshes.forEach((b) => {
+        b.rotation.y = 0;
     });
 
     const bottle = bottleMeshes[index];
@@ -1223,17 +1272,16 @@ function inspectPerfume(index) {
         bottle.getWorldPosition(worldPos);
 
         const isMobile = window.innerWidth < 640;
-        // On mobile, frame the camera slightly lower in lookAt so the bottle rises into the open top sky above the bottom sheet
-        targetCamPos.set(
-            isMobile ? worldPos.x : worldPos.x - 0.35, 
-            worldPos.y + (isMobile ? -0.35 : 0.12), 
-            worldPos.z + (isMobile ? 3.4 : 3.1)
-        );
-        targetLookAt.set(
-            worldPos.x, 
-            worldPos.y + (isMobile ? -0.65 : 0.05), 
-            worldPos.z
-        );
+        
+        // On mobile, target slightly lower so the 3D bottle floats in the open area above the bottom sheet
+        const lookY = isMobile ? worldPos.y - 0.65 : worldPos.y + 0.05;
+        const camY = isMobile ? worldPos.y - 0.35 : worldPos.y + 0.12;
+        const camDist = isMobile ? 3.4 : 3.1;
+        const camXOffset = isMobile ? 0 : -0.35;
+
+        targetCamPos.set(worldPos.x + camXOffset, camY, worldPos.z + camDist);
+        targetLookAt.set(worldPos.x, lookY, worldPos.z);
+        
         isTransitioningCam = true;
 
         if (orbitControls) {
@@ -1551,9 +1599,6 @@ function openCheckoutModal() {
     playSfx('click');
     closeCartDrawer();
     document.getElementById("checkout-modal").classList.remove("hidden");
-    try {
-        window.history.pushState({ view: 'checkout' }, '');
-    } catch (e) {}
 }
 
 function closeCheckoutModal() {
@@ -1796,7 +1841,7 @@ function onWindowResize() {
 
     // Dynamically adjust FOV based on aspect ratio
     if (camera.aspect < 1.0) {
-        camera.fov = 52; // Mobile portrait
+        camera.fov = 48; // Mobile portrait
     } else {
         camera.fov = 38; // Desktop landscape
     }
@@ -1807,7 +1852,7 @@ function onWindowResize() {
 
     if (GAME.mode === 'STORE') {
         const isMobile = width < 640;
-        targetCamPos.set(0, isMobile ? 3.2 : 2.7, isMobile ? 12.5 : 9.8);
+        targetCamPos.set(0, isMobile ? 3.2 : 2.7, isMobile ? 11.5 : 9.8);
         targetLookAt.set(0, 1.8, 0);
         camera.position.copy(targetCamPos);
     }
