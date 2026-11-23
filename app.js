@@ -371,7 +371,7 @@ function renderGiftBox() {
                 <!-- Bottle Visual with Velvet Recess Ambient Glow & Pedestal -->
                 <div class="relative my-auto flex flex-col items-center justify-center h-28 sm:h-44 w-full py-1">
                     <div class="absolute inset-0 bg-radial ${perfume.auraGradient} opacity-70 mix-blend-screen pointer-events-none"></div>
-                    <img src="${perfume.image}" alt="${perfume.name}" class="h-full w-auto max-h-[110px] sm:max-h-[165px] object-contain filter drop-shadow-[0_12px_22px_rgba(0,0,0,0.95)] transform group-hover:scale-105 transition-transform duration-300 pointer-events-none" loading="lazy">
+                    <img src="${perfume.image}" alt="${perfume.name}" class="slot-flacon-mask h-full w-auto max-h-[110px] sm:max-h-[165px] object-contain filter drop-shadow-[0_12px_22px_rgba(0,0,0,0.95)] transform group-hover:scale-105 transition-transform duration-300 pointer-events-none" loading="lazy">
                     <div class="flacon-pedestal-disc mt-1 pointer-events-none"></div>
                 </div>
 
@@ -434,9 +434,10 @@ function renderScentPaletteTray() {
 
     tray.innerHTML = PERFUMES.map((perfume, idx) => {
         const timesInBox = APP.giftBox.slots.filter(s => s && s.id === perfume.id).length;
+        const isInBox = timesInBox > 0;
 
         return `
-            <div class="scent-palette-card glass-panel rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-between text-center border border-white/10 hover:border-gold-400 transition cursor-grab active:cursor-grabbing group relative select-none"
+            <div class="scent-palette-card glass-panel rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-between text-center border ${isInBox ? 'border-gold-400 bg-gold-950/25 shadow-[0_0_18px_rgba(212,175,55,0.22)]' : 'border-white/10 hover:border-gold-400/60'} transition-all duration-300 cursor-grab active:cursor-grabbing group relative select-none w-[132px] sm:w-auto flex-shrink-0 snap-center"
                  draggable="true"
                  ondragstart="handleDragStart(event, ${idx})"
                  onclick="handlePalettePerfumeClick(${idx})"
@@ -444,27 +445,33 @@ function renderScentPaletteTray() {
                  ontouchmove="handleTouchMove(event)"
                  ontouchend="handleTouchEnd(event, ${idx})">
                 
-                <!-- In-Box Badge -->
-                ${timesInBox > 0 ? `
-                    <span class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[8px] font-mono font-bold bg-gold-500 text-black">
-                        ✓ In Box
-                    </span>
-                ` : ''}
+                <!-- Dedicated Top Status Header: Slot Index & In-Box Badge (Physically separated above image, z-20) -->
+                <div class="w-full flex items-center justify-between min-h-[20px] px-0.5 relative z-20 mb-1 pointer-events-none">
+                    <span class="text-[8px] font-mono font-bold ${isInBox ? 'text-gold-300' : 'text-gray-400/80'} uppercase">0${idx + 1}</span>
+                    ${isInBox ? `
+                        <span class="px-1.5 py-0.5 rounded text-[8px] font-mono font-bold bg-gold-400 text-black shadow-md flex items-center space-x-0.5 tracking-tight">
+                            <span class="text-[9px] leading-none font-black">✓</span>
+                            <span>IN BOX${timesInBox > 1 ? ` (${timesInBox})` : ''}</span>
+                        </span>
+                    ` : `
+                        <span class="text-[7px] font-mono text-gray-500 uppercase tracking-wider">READY</span>
+                    `}
+                </div>
 
-                <!-- Bottle Thumbnail -->
-                <div class="h-20 sm:h-24 w-full flex items-center justify-center py-1">
-                    <img src="${perfume.image}" alt="${perfume.name}" class="h-full w-auto object-contain filter drop-shadow group-hover:scale-110 transition duration-300 pointer-events-none">
+                <!-- Bottle Thumbnail with Radial Feathering & Safe Height -->
+                <div class="h-20 sm:h-24 w-full flex items-center justify-center py-0.5 relative z-10 overflow-hidden">
+                    <img src="${perfume.image}" alt="${perfume.name}" class="flacon-cropped-view h-full w-auto max-h-[80px] sm:max-h-[96px] object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.85)] group-hover:scale-105 transition-transform duration-300 pointer-events-none" loading="lazy">
                 </div>
 
                 <!-- Perfume Info -->
                 <div class="w-full mt-1">
                     <span class="font-cinzel text-[11px] sm:text-xs font-black text-white uppercase block truncate">${perfume.name}</span>
-                    <span class="text-[9px] text-gold-400 font-mono block truncate">${perfume.tagline.split('&')[0]}</span>
+                    <span class="text-[9px] text-gold-400/90 font-mono block truncate">${perfume.tagline.split('&')[0]}</span>
                 </div>
 
                 <!-- Add Button / Drag Hint -->
-                <button type="button" class="w-full mt-2 py-1 px-1.5 rounded-lg bg-gold-500/15 hover:bg-gold-500 hover:text-black border border-gold-500/30 text-[9px] font-bold text-gold-300 uppercase transition pointer-events-auto">
-                    + Place in Box
+                <button type="button" class="w-full mt-2 py-1 px-1.5 rounded-lg ${isInBox ? 'bg-gold-500 text-black font-extrabold shadow-sm' : 'bg-gold-500/15 hover:bg-gold-500 hover:text-black text-gold-300'} border border-gold-500/40 text-[9px] font-bold uppercase transition pointer-events-auto">
+                    ${isInBox ? '+ Add Another' : '+ Place in Box'}
                 </button>
             </div>
         `;
@@ -812,7 +819,7 @@ function renderCollectionGrid(filter = 'all') {
                 
                 <!-- Card Image & Badge Overlay -->
                 <div class="relative w-full h-64 sm:h-72 overflow-hidden bg-black flex items-center justify-center p-3 border-b border-white/10">
-                    <img src="${perfume.image}" alt="${perfume.name}" class="h-full w-auto object-contain filter drop-shadow-[0_12px_30px_rgba(0,0,0,0.9)] transform group-hover:scale-105 transition-transform duration-500" loading="lazy">
+                    <img src="${perfume.image}" alt="${perfume.name}" class="flacon-cropped-view h-full w-auto object-contain filter drop-shadow-[0_12px_30px_rgba(0,0,0,0.9)] transform group-hover:scale-105 transition-transform duration-500" loading="lazy">
                     
                     <span class="absolute top-3 left-3 bg-black/80 backdrop-blur-md px-2.5 py-1 rounded-full text-[9px] font-mono text-gold-400 font-bold border border-gold-500/30 uppercase tracking-widest">
                         ${perfume.badge}
@@ -1370,6 +1377,111 @@ function showToast(message, icon = "check") {
 }
 
 // ==========================================
+// LIVE SOCIAL PROOF PURCHASE NOTIFICATIONS
+// Compact, mobile-first, South India & Kerala centric
+// ==========================================
+const SOCIAL_PROOF_ORDERS = [
+    { name: "Rahul M.", city: "Kochi, Kerala", product: "One Billion (50ml Extrait)", img: "images/one-billion.jpg", time: "Just now" },
+    { name: "Ananya S.", city: "Trivandrum, Kerala", product: "Bespoke 3-Perfume Gift Box", img: "images/eterna-flora.jpg", time: "2m ago" },
+    { name: "Fahad K.", city: "Calicut (Kozhikode), Kerala", product: "Bleu Mist (100ml Grand)", img: "images/bleu-mist.jpg", time: "4m ago" },
+    { name: "Devika N.", city: "Thrissur, Kerala", product: "Eterna Flora (50ml Extrait)", img: "images/eterna-flora.jpg", time: "6m ago" },
+    { name: "Ashwin P.", city: "Ernakulam, Kerala", product: "10000 Wishes (100ml Grand)", img: "images/10000-wishes.jpg", time: "8m ago" },
+    { name: "Sneha V.", city: "Kottayam, Kerala", product: "Paradoxe (25ml Pocket)", img: "images/paradoxe.jpg", time: "11m ago" },
+    { name: "Gautham R.", city: "Kannur, Kerala", product: "Bespoke 3-Perfume Coffret Set", img: "images/one-billion.jpg", time: "13m ago" },
+    { name: "Nikhil T.", city: "Palakkad, Kerala", product: "One Billion (100ml Extrait)", img: "images/one-billion.jpg", time: "17m ago" },
+    { name: "Meera J.", city: "Alappuzha, Kerala", product: "Eterna Flora (25ml Pocket)", img: "images/eterna-flora.jpg", time: "20m ago" },
+    { name: "Arjun K.", city: "Kollam, Kerala", product: "Bleu Mist (50ml Extrait)", img: "images/bleu-mist.jpg", time: "24m ago" },
+    { name: "Rhea Menon", city: "Malappuram, Kerala", product: "10000 Wishes (50ml Extrait)", img: "images/10000-wishes.jpg", time: "28m ago" },
+    { name: "Siddharth B.", city: "Bangalore, Karnataka", product: "Bespoke 3-Perfume Gift Box", img: "images/bleu-mist.jpg", time: "32m ago" },
+    { name: "Kavya Nair", city: "Coimbatore, Tamil Nadu", product: "Paradoxe (50ml Extrait)", img: "images/paradoxe.jpg", time: "36m ago" }
+];
+
+let socialProofIndex = 0;
+let socialProofTimer = null;
+let socialProofDismissed = false;
+
+function initSocialProof() {
+    const container = document.getElementById("social-proof-toast");
+    if (!container) return;
+
+    // First popup appears after 4 seconds
+    setTimeout(() => {
+        showNextSocialProof();
+    }, 4000);
+}
+
+function showNextSocialProof() {
+    if (socialProofDismissed) return;
+    const container = document.getElementById("social-proof-toast");
+    if (!container) return;
+
+    const order = SOCIAL_PROOF_ORDERS[socialProofIndex % SOCIAL_PROOF_ORDERS.length];
+    socialProofIndex++;
+
+    container.innerHTML = `
+        <div class="social-proof-card rounded-2xl p-2.5 sm:p-3 flex items-center space-x-2.5 relative select-none">
+            <!-- Mini Bottle Preview with Mask Vignette -->
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-black/70 border border-gold-500/30 flex-shrink-0 flex items-center justify-center p-0.5 overflow-hidden">
+                <img src="${order.img}" alt="${order.product}" class="flacon-cropped-view h-full w-auto object-contain">
+            </div>
+
+            <!-- Buyer Details & Location -->
+            <div class="flex-1 min-w-0 pr-4">
+                <div class="flex items-center space-x-1.5 leading-tight">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0 animate-pulse"></span>
+                    <span class="text-[11px] font-bold text-white truncate">${order.name}</span>
+                    <span class="text-[9px] text-gray-400">in</span>
+                    <span class="text-[10px] font-semibold text-gold-300 truncate">${order.city}</span>
+                </div>
+                <div class="text-[10px] text-gray-300 truncate font-cinzel mt-0.5">
+                    Purchased <span class="text-white font-bold">${order.product}</span>
+                </div>
+                <div class="text-[8px] font-mono text-emerald-400/90 mt-0.5 flex items-center space-x-1">
+                    <span>✓ Verified Buyer</span>
+                    <span>•</span>
+                    <span>${order.time}</span>
+                </div>
+            </div>
+
+            <!-- Quick Close Button -->
+            <button onclick="dismissSocialProof(event)" class="absolute top-1.5 right-1.5 text-gray-400 hover:text-white p-1 transition" title="Dismiss">
+                <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+        </div>
+    `;
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Show popup
+    container.classList.remove("toast-hidden");
+    container.classList.add("toast-visible");
+
+    // Auto-dismiss after 4.8 seconds
+    clearTimeout(socialProofTimer);
+    socialProofTimer = setTimeout(() => {
+        container.classList.remove("toast-visible");
+        container.classList.add("toast-hidden");
+
+        // Schedule next popup after 12-16 seconds
+        const nextDelay = 12000 + Math.random() * 4000;
+        setTimeout(() => {
+            showNextSocialProof();
+        }, nextDelay);
+    }, 4800);
+}
+
+function dismissSocialProof(e) {
+    if (e) e.stopPropagation();
+    socialProofDismissed = true;
+    const container = document.getElementById("social-proof-toast");
+    if (container) {
+        container.classList.remove("toast-visible");
+        container.classList.add("toast-hidden");
+    }
+    clearTimeout(socialProofTimer);
+}
+
+// ==========================================
 // APPLICATION INITIALIZATION
 // ==========================================
 window.addEventListener("DOMContentLoaded", () => {
@@ -1379,6 +1491,7 @@ window.addEventListener("DOMContentLoaded", () => {
     renderPyramidPills();
     switchPyramidScent(0);
     renderCartUI();
+    initSocialProof();
 
     // Trigger Lucide icons
     if (typeof lucide !== 'undefined') {

@@ -249,11 +249,11 @@
                                     ✦ CHOOSE FROM OUR 5 SIGNATURE EXTRAITS:
                                 </span>
                             </div>
-                            <span class="text-[10px] text-gray-400 font-mono hidden sm:inline">Drag bottle or tap to place</span>
+                            <span class="text-[10px] text-gray-400 font-mono">Tap or drag flacon to place</span>
                         </div>
 
-                        <!-- 5 Fragrances Horizontal Carousel / Grid -->
-                        <div id="scent-palette-tray" class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3">
+                        <!-- 5 Fragrances Horizontal Carousel / Grid (Mobile swipeable snap reel, desktop 5-col) -->
+                        <div id="scent-palette-tray" class="flex overflow-x-auto sm:grid sm:grid-cols-5 gap-2.5 sm:gap-3 pb-2 sm:pb-0 no-scrollbar snap-x touch-pan-x">
                             <!-- Injected dynamically via app.js -->
                         </div>
                     </div>
@@ -997,6 +997,11 @@
 
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none space-y-2"></div>
+
+    <!-- Live Social Proof Purchase Notification (South India / Kerala, Compact Mobile First) -->
+    <div id="social-proof-toast" class="fixed bottom-4 left-3 right-3 sm:left-6 sm:right-auto sm:max-w-xs z-50 pointer-events-none transform translate-y-16 opacity-0 transition-all duration-500 ease-out">
+        <!-- Injected dynamically via app.js -->
+    </div>
 
     <!-- Application Engine Script -->
     <script src="app.js"></script>
