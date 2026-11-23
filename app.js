@@ -19,21 +19,21 @@ const PERFUMES = [
         liquidColor: 0xd97706, // Rich Warm Amber Gold
         auraGradient: "from-amber-600/30 via-transparent to-transparent",
         prices: {
-            25: 599,   // 25 ML Pocket Extrait
-            50: 899,   // 50 ML Signature Flacon
-            100: 1199  // 100 ML Grand Collector Flacon
+            25: 599,   // 25 ML Pocket Perfume
+            50: 899,   // 50 ML Signature Bottle
+            100: 1199  // 100 ML Collector Bottle
         },
         sizes: {
-            25: { label: "25 ML", title: "Pocket Extrait", desc: "Slender travel-luxury flacon with solid gold cap" },
-            50: { label: "50 ML", title: "Signature Flacon", desc: "Classic architectural flacon with gold emblem" },
-            100: { label: "100 ML", title: "Grand Collector", desc: "Heavy crystal flacon with knurled gold crown" }
+            25: { label: "25 ML", title: "Pocket Perfume", desc: "Slender travel-luxury bottle with solid gold cap" },
+            50: { label: "50 ML", title: "Signature Bottle", desc: "Classic architectural bottle with gold emblem" },
+            100: { label: "100 ML", title: "Collector Bottle", desc: "Heavy crystal bottle with knurled gold crown" }
         },
         notes: {
             top: "Blood Mandarin, Frosted Grapefruit, Spiced Mint",
             heart: "Blonde Tuscan Leather, Cinnamon Bark, Rose Absolute",
             base: "Amber Ketals, White Woods, Indonesian Patchouli"
         },
-        stats: { longevity: "16+ Hours (Eternal)", sillage: "Room-Filling (10/10)", concentration: "35% Pure Extrait" },
+        stats: { longevity: "16+ Hours (Eternal)", sillage: "Room-Filling (10/10)", concentration: "35% Pure Perfume" },
         mood: "Boardroom Dominance • High-Roller Evenings",
         category: "amber",
         isBestseller: true,
@@ -56,20 +56,20 @@ const PERFUMES = [
             100: 1149
         },
         sizes: {
-            25: { label: "25 ML", title: "Pocket Extrait", desc: "Sleek pocket sprayer with icy sapphire core" },
-            50: { label: "50 ML", title: "Signature Flacon", desc: "Mid-size blue crystal with brushed gold trim" },
-            100: { label: "100 ML", title: "Grand Collector", desc: "Oversized crystal flacon with deep sapphire liquid" }
+            25: { label: "25 ML", title: "Pocket Perfume", desc: "Sleek pocket sprayer with icy sapphire core" },
+            50: { label: "50 ML", title: "Signature Bottle", desc: "Mid-size blue crystal bottle with brushed gold trim" },
+            100: { label: "100 ML", title: "Collector Bottle", desc: "Oversized crystal bottle with deep sapphire liquid" }
         },
         notes: {
             top: "Sparkling Calabrian Bergamot, Marine Ozone, Sea Salt",
             heart: "Blue Cedar, French Lavender, Crushed Mint, Pink Pepper",
             base: "Pure Ambroxan, Mineral Moss, Smoked Ambergris"
         },
-        stats: { longevity: "14+ Hours (Beast Fresh)", sillage: "Clean Shockwave (10/10)", concentration: "35% Pure Extrait" },
+        stats: { longevity: "14+ Hours (Beast Fresh)", sillage: "Clean Shockwave (10/10)", concentration: "35% Pure Perfume" },
         mood: "Summer Coastal Drives • Night Club Energy",
         category: "aquatic",
         isBestseller: true,
-        quote: "Electrifying sapphire blue flacon. Fresh, cold, unstoppable projection that cuts through the heat."
+        quote: "Electrifying sapphire blue bottle. Fresh, cold, unstoppable projection that cuts through the heat."
     },
     {
         id: 3,
@@ -88,20 +88,20 @@ const PERFUMES = [
             100: 1199
         },
         sizes: {
-            25: { label: "25 ML", title: "Pocket Extrait", desc: "Slender travel flacon with chartreuse liquid" },
-            50: { label: "50 ML", title: "Signature Flacon", desc: "Architectural emerald flacon with gold collar" },
-            100: { label: "100 ML", title: "Grand Collector", desc: "Masterwork crystal flacon with hypnotic emerald glow" }
+            25: { label: "25 ML", title: "Pocket Perfume", desc: "Slender travel bottle with chartreuse liquid" },
+            50: { label: "50 ML", title: "Signature Bottle", desc: "Architectural emerald bottle with gold collar" },
+            100: { label: "100 ML", title: "Collector Bottle", desc: "Masterwork crystal bottle with hypnotic emerald glow" }
         },
         notes: {
             top: "Neroli Bud Essence, Tangerine Zest, Crisp Pear",
             heart: "Bio-fermented Amber, White Jasmine Petals, Moss",
             base: "Bourbon Vanilla Infusion, Clean White Musk, Serenolide"
         },
-        stats: { longevity: "15+ Hours (Hypnotic)", sillage: "Magnetic Aura (10/10)", concentration: "35% Pure Extrait" },
+        stats: { longevity: "15+ Hours (Hypnotic)", sillage: "Magnetic Aura (10/10)", concentration: "35% Pure Perfume" },
         mood: "Intimate Evenings • VIP Encounters • Magnetic Attraction",
         category: "amber",
         isBestseller: false,
-        quote: "Vibrant chartreuse green flacon. An intoxicating floral-amber paradox that turns every head."
+        quote: "Vibrant chartreuse green bottle. An intoxicating floral-amber paradox that turns every head."
     },
     {
         id: 4,
@@ -120,16 +120,16 @@ const PERFUMES = [
             100: 1099
         },
         sizes: {
-            25: { label: "25 ML", title: "Pocket Extrait", desc: "Pocket-sized golden nectar flacon" },
-            50: { label: "50 ML", title: "Signature Flacon", desc: "Golden honey amber bottle with 24K emblem" },
-            100: { label: "100 ML", title: "Grand Collector", desc: "Grand golden flacon with thick crystal base" }
+            25: { label: "25 ML", title: "Pocket Perfume", desc: "Pocket-sized golden nectar bottle" },
+            50: { label: "50 ML", title: "Signature Bottle", desc: "Golden honey amber bottle with 24K emblem" },
+            100: { label: "100 ML", title: "Collector Bottle", desc: "Grand golden bottle with thick crystal base" }
         },
         notes: {
             top: "Sparkling Champagne, Starfruit, Pink Peony",
             heart: "Star Jasmine, Sugared Sandalwood, Night Amber",
             base: "Madagascar Vanilla Bean, Warm Tonka, Golden Musk"
         },
-        stats: { longevity: "14+ Hours (Beast)", sillage: "Gourmand Cloud (9.9/10)", concentration: "35% Pure Extrait" },
+        stats: { longevity: "14+ Hours (Beast)", sillage: "Gourmand Cloud (9.9/10)", concentration: "35% Pure Perfume" },
         mood: "Celebration • Date Night Glamour • Warm Euphoria",
         category: "amber",
         isBestseller: false,
@@ -152,16 +152,16 @@ const PERFUMES = [
             100: 1099
         },
         sizes: {
-            25: { label: "25 ML", title: "Pocket Extrait", desc: "Slender platinum floral spray" },
-            50: { label: "50 ML", title: "Signature Flacon", desc: "Pure crystal flacon with platinum champagne extrait" },
-            100: { label: "100 ML", title: "Grand Collector", desc: "Majestic crystal bottle with royal May Rose heart" }
+            25: { label: "25 ML", title: "Pocket Perfume", desc: "Slender platinum floral spray" },
+            50: { label: "50 ML", title: "Signature Bottle", desc: "Pure crystal bottle with platinum champagne perfume" },
+            100: { label: "100 ML", title: "Collector Bottle", desc: "Majestic crystal bottle with royal May Rose heart" }
         },
         notes: {
             top: "White Peach, Italian Iris, Pink Peppercorn",
             heart: "May Rose de Grasse, Damask Rose, Royal Jasmine",
             base: "Smoked Vetiver, Grey Ambergris, Pure Cedar"
         },
-        stats: { longevity: "15+ Hours", sillage: "Aristocratic Sillage (9.8/10)", concentration: "35% Pure Extrait" },
+        stats: { longevity: "15+ Hours", sillage: "Royal Scent Trail (9.8/10)", concentration: "35% Pure Perfume" },
         mood: "Daytime Elegance • Royal Occasions • Sophisticated Luxury",
         category: "floral",
         isBestseller: false,
@@ -327,7 +327,7 @@ function calculateGiftBoxTotals() {
         regularSum = actualSum;
         displayTotal = tierPrice;
         savings = Math.max(0, regularSum - displayTotal);
-        formulaText = `3 Flacons: ${parts.join(' + ')} = ₹${regularSum.toLocaleString('en-IN')}`;
+        formulaText = `3 Bottles: ${parts.join(' + ')} = ₹${regularSum.toLocaleString('en-IN')}`;
     } else if (filledCount > 0) {
         regularSum = actualSum;
         displayTotal = actualSum;
@@ -337,7 +337,7 @@ function calculateGiftBoxTotals() {
         regularSum = 0;
         displayTotal = tierPrice;
         savings = 0;
-        formulaText = `Select 3 flacons to curate your bespoke coffret`;
+        formulaText = `Select 3 perfumes to build your custom gift box`;
     }
 
     const savingsPercent = regularSum > 0 && savings > 0 ? Math.round((savings / regularSum) * 100) : 0;
@@ -376,7 +376,7 @@ function renderGiftBox() {
     if (counterBadge) {
         if (filledCount === 3) {
             counterBadge.className = "px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
-            counterBadge.innerText = "✓ 3 / 3 VAULT COMPLETE";
+            counterBadge.innerText = "✓ 3 / 3 BOX COMPLETE";
         } else {
             counterBadge.className = "px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-gold-500/20 text-gold-300 border border-gold-500/40";
             counterBadge.innerText = `${filledCount} / 3 SLOTS FILLED`;
@@ -425,7 +425,7 @@ function renderGiftBox() {
                     <span class="px-1.5 py-0.5 rounded bg-gold-500/25 text-gold-300 border border-gold-500/40 uppercase font-bold text-[8px] sm:text-[9px]">
                         0${slotIdx + 1}
                     </span>
-                    <button onclick="event.stopPropagation(); removePerfumeFromSlot(${slotIdx})" class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-black/85 hover:bg-red-950 text-gray-400 hover:text-red-400 border border-white/20 hover:border-red-500 flex items-center justify-center transition shadow-lg" title="Remove or swap this flacon">
+                    <button onclick="event.stopPropagation(); removePerfumeFromSlot(${slotIdx})" class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-black/85 hover:bg-red-950 text-gray-400 hover:text-red-400 border border-white/20 hover:border-red-500 flex items-center justify-center transition shadow-lg" title="Remove or change this perfume">
                         <i data-lucide="x" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
                     </button>
                 </div>
@@ -496,7 +496,7 @@ function renderGiftBox() {
             savingsBadge.innerText = `SAVE ₹${calc.savings.toLocaleString('en-IN')}`;
         } else if (calc.filledCount === 3) {
             savingsBadge.className = "px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-gold-500/20 text-gold-300 border border-gold-500/30";
-            savingsBadge.innerText = "VAULT READY";
+            savingsBadge.innerText = "BOX READY";
         } else {
             savingsBadge.className = "px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-white/10 text-gray-300 border border-white/20";
             savingsBadge.innerText = `${calc.filledCount}/3 SELECTED`;
@@ -524,7 +524,7 @@ function renderGiftBox() {
             el.innerText = `SAVE ₹${calc.savings.toLocaleString('en-IN')}`;
         } else if (calc.filledCount === 3) {
             el.className = "px-2.5 py-1 rounded-full text-[9px] sm:text-[10px] font-mono font-bold bg-gold-500/20 text-gold-300 border border-gold-500/30 box-savings-badge-val";
-            el.innerText = "VAULT READY";
+            el.innerText = "BOX READY";
         } else {
             el.className = "px-2.5 py-1 rounded-full text-[9px] sm:text-[10px] font-mono font-bold bg-white/10 text-gray-300 border border-white/20 box-savings-badge-val";
             el.innerText = `${calc.filledCount}/3 SELECTED`;
@@ -612,7 +612,7 @@ function renderScentPaletteTray() {
 
                 <!-- Add Button / Drag Hint -->
                 <button type="button" onclick="event.stopPropagation(); handlePalettePerfumeClick(${idx});" class="w-full mt-2 py-1.5 px-1.5 rounded-lg ${isInBox ? 'bg-gold-500/25 text-gold-300 border border-gold-500/40' : 'bg-gold-500/15 hover:bg-gold-500 hover:text-black text-gold-300'} border border-gold-500/40 text-[9px] font-bold uppercase transition pointer-events-auto min-h-[34px] flex items-center justify-center space-x-1">
-                    <span>${isInBox ? '✓ In Vault' : '+ Place in Box'}</span>
+                    <span>${isInBox ? '✓ In Box' : '+ Place in Box'}</span>
                     <span class="text-[8px] font-mono font-normal opacity-80">(₹${price})</span>
                 </button>
             </div>
@@ -1020,7 +1020,7 @@ function selectGiftBoxSize(size) {
 
     renderGiftBox();
     renderScentPaletteTray();
-    showToast(`Selected ${size} ML Coffret Set`, "check");
+    showToast(`Selected ${size} ML Gift Box Set`, "check");
 }
 
 function selectBoxFinish(finish) {
@@ -1098,8 +1098,8 @@ function addGiftBoxToCart() {
     const giftBoxItem = {
         id: `giftbox-${Date.now()}`,
         isGiftBox: true,
-        name: `Bespoke 3-Flacon Discovery Coffret`,
-        subtitle: `Curated trio: ${APP.giftBox.slots.map(s => `${s.name} (₹${s.prices[size]})`).join(', ')}`,
+        name: `Custom 3-Perfume Gift Box`,
+        subtitle: `Selected 3: ${APP.giftBox.slots.map(s => `${s.name} (₹${s.prices[size]})`).join(', ')}`,
         perfumes: APP.giftBox.slots.map(s => `${s.name} (₹${s.prices[size]})`),
         perfumeImages: APP.giftBox.slots.map(s => s.image),
         size: size,
@@ -1123,7 +1123,7 @@ function addGiftBoxToCart() {
     playSfx('add-to-bag');
     renderCartUI();
     openCartDrawer();
-    showToast("Added Bespoke Gift Vault to Bag!", "gift");
+    showToast("Added Custom Gift Box to Bag!", "gift");
 }
 
 function quickOrderGiftBoxWhatsApp() {
@@ -1149,20 +1149,20 @@ function quickOrderGiftBoxWhatsApp() {
 
     const perfumesList = APP.giftBox.slots.map((p, idx) => `   ${idx + 1}. ${p.name} (${size}ml - ₹${p.prices[size]})`).join('\n');
 
-    let message = `*NEW ORDER - PERFUME KOMPANY BESPOKE GIFT VAULT*\n` +
+    let message = `*NEW ORDER - PERFUME KOMPANY CUSTOM GIFT BOX*\n` +
         `----------------------------------------\n` +
-        `✦ Item: Bespoke 3-Flacon Discovery Coffret\n` +
+        `✦ Item: Custom 3-Perfume Gift Box\n` +
         `✦ Volume: 3 × ${size} ML (${pricing.label})\n` +
-        `✦ Selected Extraits (35% Pure Oil):\n` +
+        `✦ Selected Perfumes (35% Pure Oil):\n` +
         `${perfumesList}\n` +
-        `✦ Flacons Value: ₹${calc.regularSum.toLocaleString('en-IN')}\n` +
-        `✦ Coffret Special Price: *₹${calc.displayTotal.toLocaleString('en-IN')}*${calc.savings > 0 ? ` (Saved ₹${calc.savings.toLocaleString('en-IN')})` : ''}\n` +
+        `✦ Bottles Value: ₹${calc.regularSum.toLocaleString('en-IN')}\n` +
+        `✦ Gift Box Special Price: *₹${calc.displayTotal.toLocaleString('en-IN')}*${calc.savings > 0 ? ` (Saved ₹${calc.savings.toLocaleString('en-IN')})` : ''}\n` +
         `✦ Packaging Finish: ${finishName} Box (Complimentary)\n` +
         `✦ Silk Ribbon Wrap: ${ribbonName} (Complimentary)\n` +
         `✦ Engraved Card: To "${recName}" - "${msgText}"\n` +
-        `✦ Delivery: Free Express VIP Courier\n` +
+        `✦ Delivery: Free Express Courier\n` +
         `----------------------------------------\n` +
-        `Please confirm my custom gift vault order and share payment link / delivery details. Thank you!`;
+        `Please confirm my custom gift box order and share payment link / delivery details. Thank you!`;
 
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
 }
@@ -1200,7 +1200,7 @@ function renderCollectionGrid(filter = 'all') {
                         35% EXTRAIT
                     </span>
 
-                    <button onclick="addPerfumeToGiftBox(${perfume.id})" class="absolute bottom-3 right-3 glass-panel hover:bg-gold-500 hover:text-black text-gold-300 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center space-x-1.5 transition shadow-lg" title="Add this flacon to your 3-perfume Gift Box">
+                    <button onclick="addPerfumeToGiftBox(${perfume.id})" class="absolute bottom-3 right-3 glass-panel hover:bg-gold-500 hover:text-black text-gold-300 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center space-x-1.5 transition shadow-lg" title="Add this perfume to your 3-perfume Gift Box">
                         <i data-lucide="gift" class="w-3.5 h-3.5 text-gold-400"></i>
                         <span>+ Gift Box</span>
                     </button>
@@ -1430,7 +1430,7 @@ function applyPromoCode() {
     if (code === 'PK10' || code === 'FIRST10' || code === 'VIP10') {
         APP.promoApplied = true;
         playSfx('add-to-bag');
-        showToast("10% VIP Vault Discount Applied!", "check");
+        showToast("10% Promo Discount Applied!", "check");
         renderCartUI();
     } else if (code === '') {
         showToast("Please enter a promo code", "alert-circle");
@@ -1460,7 +1460,7 @@ function renderCartUI() {
     const progressBar = document.getElementById("shipping-progress-bar");
     if (progressBar && progressText) {
         progressBar.style.width = '100%';
-        progressText.innerText = "FREE EXPRESS VIP COURIER APPLIED";
+        progressText.innerText = "FREE EXPRESS COURIER APPLIED";
     }
 
     // Render Items
@@ -1471,7 +1471,7 @@ function renderCartUI() {
                 <div class="text-center py-16 space-y-3">
                     <i data-lucide="shopping-bag" class="w-12 h-12 text-gold-500/40 mx-auto"></i>
                     <p class="font-cinzel text-base text-gray-300 uppercase">Your Bag is Empty</p>
-                    <p class="text-xs text-gray-500 max-w-xs mx-auto">Explore our 5 signature extraits or curate your bespoke 3-perfume gift coffret.</p>
+                    <p class="text-xs text-gray-500 max-w-xs mx-auto">Explore our 5 signature perfumes or build your custom 3-perfume gift box.</p>
                 </div>
             `;
         } else {
@@ -1479,12 +1479,12 @@ function renderCartUI() {
                 if (item.isGiftBox) {
                     return `
                         <div class="flex items-start space-x-3.5 pt-3.5 first:pt-0">
-                            <!-- 3 Mini Flacons in Vault Graphic -->
+                            <!-- 3 Mini Bottles in Box Graphic -->
                             <div class="w-16 h-20 rounded-xl bg-gradient-to-b from-stone-900 to-black border border-gold-500/40 p-1 flex items-center justify-center flex-shrink-0 relative overflow-hidden shadow-lg">
                                 <div class="flex items-center -space-x-3 scale-95">
                                     ${item.perfumeImages.map(img => `<img src="${img}" class="w-6 h-12 object-contain filter drop-shadow">`).join('')}
                                 </div>
-                                <span class="absolute bottom-0 inset-x-0 bg-gold-500 text-black text-[7px] font-black text-center font-mono uppercase">VAULT</span>
+                                <span class="absolute bottom-0 inset-x-0 bg-gold-500 text-black text-[7px] font-black text-center font-mono uppercase">BOX</span>
                             </div>
                             
                             <div class="flex-1 min-w-0">
@@ -1599,7 +1599,7 @@ function closeCartDrawer() {
 // ==========================================
 function openCheckoutModal() {
     if (APP.cart.length === 0) {
-        showToast("Your bag is empty! Add a flacon first.", "alert-circle");
+        showToast("Your bag is empty! Add a perfume first.", "alert-circle");
         return;
     }
     playSfx('click');
@@ -1663,7 +1663,7 @@ function closeSuccessModal() {
 // 1-Click WhatsApp Order Dispatch
 function orderViaWhatsApp() {
     if (APP.cart.length === 0) {
-        showToast("Your bag is empty! Add a flacon or gift vault first.", "alert-circle");
+        showToast("Your bag is empty! Add a perfume or gift box first.", "alert-circle");
         return;
     }
 
@@ -1676,8 +1676,8 @@ function orderViaWhatsApp() {
     APP.cart.forEach((item, i) => {
         if (item.isGiftBox) {
             message += `${i + 1}. *${item.name}* (${item.sizeLabel})\n`;
-            message += `   Flacons: ${item.perfumes.join(', ')}\n`;
-            message += `   Packaging: ${item.boxFinish} Vault with ${item.ribbon} Ribbon\n`;
+            message += `   Perfumes: ${item.perfumes.join(', ')}\n`;
+            message += `   Packaging: ${item.boxFinish} Box with ${item.ribbon} Ribbon\n`;
             if (item.giftNote && (item.giftNote.recipient || item.giftNote.message)) {
                 message += `   Gift Note: To "${item.giftNote.recipient}" - "${item.giftNote.message}" (From: ${item.giftNote.sender})\n`;
             }
@@ -1689,8 +1689,8 @@ function orderViaWhatsApp() {
     });
     message += `----------------------------------------\n`;
     message += `✦ Total Amount: *₹${grandTotal.toLocaleString('en-IN')}*\n`;
-    message += `✦ VIP Vault Delivery: *FREE EXPRESS COURIER*\n`;
-    message += `✦ Packaging: *Luxury Hand-Poured Gift Box*\n`;
+    message += `✦ Delivery: *FREE EXPRESS COURIER*\n`;
+    message += `✦ Packaging: *Luxury Hand-Crafted Gift Box*\n`;
     message += `----------------------------------------\n`;
     message += `Please confirm my order and share the payment link / delivery details. Thank you!`;
 
@@ -1756,19 +1756,19 @@ function showToast(message, icon = "check") {
 // Compact, mobile-first, South India & Kerala centric
 // ==========================================
 const SOCIAL_PROOF_ORDERS = [
-    { name: "Rahul M.", city: "Kochi, Kerala", product: "One Billion (50ml Extrait)", img: "images/one-billion.jpg", time: "Just now" },
-    { name: "Ananya S.", city: "Trivandrum, Kerala", product: "Bespoke 3-Perfume Gift Box", img: "images/eterna-flora.jpg", time: "2m ago" },
-    { name: "Fahad K.", city: "Calicut (Kozhikode), Kerala", product: "Bleu Mist (100ml Grand)", img: "images/bleu-mist.jpg", time: "4m ago" },
-    { name: "Devika N.", city: "Thrissur, Kerala", product: "Eterna Flora (50ml Extrait)", img: "images/eterna-flora.jpg", time: "6m ago" },
-    { name: "Ashwin P.", city: "Ernakulam, Kerala", product: "10000 Wishes (100ml Grand)", img: "images/10000-wishes.jpg", time: "8m ago" },
+    { name: "Rahul M.", city: "Kochi, Kerala", product: "One Billion (50ml Bottle)", img: "images/one-billion.jpg", time: "Just now" },
+    { name: "Ananya S.", city: "Trivandrum, Kerala", product: "Custom 3-Perfume Gift Box", img: "images/eterna-flora.jpg", time: "2m ago" },
+    { name: "Fahad K.", city: "Calicut (Kozhikode), Kerala", product: "Bleu Mist (100ml Bottle)", img: "images/bleu-mist.jpg", time: "4m ago" },
+    { name: "Devika N.", city: "Thrissur, Kerala", product: "Eterna Flora (50ml Bottle)", img: "images/eterna-flora.jpg", time: "6m ago" },
+    { name: "Ashwin P.", city: "Ernakulam, Kerala", product: "10000 Wishes (100ml Bottle)", img: "images/10000-wishes.jpg", time: "8m ago" },
     { name: "Sneha V.", city: "Kottayam, Kerala", product: "Paradoxe (25ml Pocket)", img: "images/paradoxe.jpg", time: "11m ago" },
-    { name: "Gautham R.", city: "Kannur, Kerala", product: "Bespoke 3-Perfume Coffret Set", img: "images/one-billion.jpg", time: "13m ago" },
-    { name: "Nikhil T.", city: "Palakkad, Kerala", product: "One Billion (100ml Extrait)", img: "images/one-billion.jpg", time: "17m ago" },
+    { name: "Gautham R.", city: "Kannur, Kerala", product: "Custom 3-Perfume Gift Box", img: "images/one-billion.jpg", time: "13m ago" },
+    { name: "Nikhil T.", city: "Palakkad, Kerala", product: "One Billion (100ml Bottle)", img: "images/one-billion.jpg", time: "17m ago" },
     { name: "Meera J.", city: "Alappuzha, Kerala", product: "Eterna Flora (25ml Pocket)", img: "images/eterna-flora.jpg", time: "20m ago" },
-    { name: "Arjun K.", city: "Kollam, Kerala", product: "Bleu Mist (50ml Extrait)", img: "images/bleu-mist.jpg", time: "24m ago" },
-    { name: "Rhea Menon", city: "Malappuram, Kerala", product: "10000 Wishes (50ml Extrait)", img: "images/10000-wishes.jpg", time: "28m ago" },
-    { name: "Siddharth B.", city: "Bangalore, Karnataka", product: "Bespoke 3-Perfume Gift Box", img: "images/bleu-mist.jpg", time: "32m ago" },
-    { name: "Kavya Nair", city: "Coimbatore, Tamil Nadu", product: "Paradoxe (50ml Extrait)", img: "images/paradoxe.jpg", time: "36m ago" }
+    { name: "Arjun K.", city: "Kollam, Kerala", product: "Bleu Mist (50ml Bottle)", img: "images/bleu-mist.jpg", time: "24m ago" },
+    { name: "Rhea Menon", city: "Malappuram, Kerala", product: "10000 Wishes (50ml Bottle)", img: "images/10000-wishes.jpg", time: "28m ago" },
+    { name: "Siddharth B.", city: "Bangalore, Karnataka", product: "Custom 3-Perfume Gift Box", img: "images/bleu-mist.jpg", time: "32m ago" },
+    { name: "Kavya Nair", city: "Coimbatore, Tamil Nadu", product: "Paradoxe (50ml Bottle)", img: "images/paradoxe.jpg", time: "36m ago" }
 ];
 
 let socialProofIndex = 0;
