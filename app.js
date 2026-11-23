@@ -368,10 +368,10 @@ function renderGiftBox() {
                     </button>
                 </div>
 
-                <!-- Bottle Visual with Velvet Recess Ambient Glow & Pedestal -->
+                <!-- Bottle Visual with Velvet Recess Ambient Glow & Translucent Flacon Glass -->
                 <div class="relative my-auto flex flex-col items-center justify-center h-28 sm:h-44 w-full py-1">
-                    <div class="absolute inset-0 bg-radial ${perfume.auraGradient} opacity-70 mix-blend-screen pointer-events-none"></div>
-                    <img src="${perfume.image}" alt="${perfume.name}" class="slot-flacon-mask h-full w-auto max-h-[110px] sm:max-h-[165px] object-contain filter drop-shadow-[0_12px_22px_rgba(0,0,0,0.95)] transform group-hover:scale-105 transition-transform duration-300 pointer-events-none" loading="lazy">
+                    <div class="absolute inset-0 bg-radial ${perfume.auraGradient} opacity-75 mix-blend-screen pointer-events-none"></div>
+                    <img src="${perfume.image}" alt="${perfume.name}" class="slot-flacon-mask box-flacon-translucent h-full w-auto max-h-[110px] sm:max-h-[165px] object-contain transform group-hover:scale-105 transition-all duration-300 pointer-events-none" loading="lazy">
                     <div class="flacon-pedestal-disc mt-1 pointer-events-none"></div>
                 </div>
 
