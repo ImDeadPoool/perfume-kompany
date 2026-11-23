@@ -393,13 +393,14 @@ function renderGiftBox() {
         if (!perfume) {
             // EMPTY SLOT
             slotEl.className = "coffret-slot slot-empty rounded-2xl p-2 sm:p-3.5 flex flex-col items-center justify-between transition-all duration-300 cursor-pointer min-h-[220px] sm:min-h-[290px] relative group";
+            slotEl.onclick = () => handleSlotTap(slotIdx);
             slotEl.innerHTML = `
-                <div class="w-full flex items-center justify-between text-[8px] sm:text-[10px] font-mono text-gold-400/80">
+                <div class="w-full flex items-center justify-between text-[8px] sm:text-[10px] font-mono text-gold-400/80 pointer-events-none">
                     <span class="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 uppercase">SLOT 0${slotIdx + 1}</span>
                     <span class="text-gray-400">OPEN</span>
                 </div>
                 
-                <div class="my-auto flex flex-col items-center justify-center space-y-1.5 sm:space-y-2 py-2 sm:py-4">
+                <div class="my-auto flex flex-col items-center justify-center space-y-1.5 sm:space-y-2 py-2 sm:py-4 pointer-events-none">
                     <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-gold-500/10 border border-gold-500/30 flex items-center justify-center group-hover:scale-110 group-hover:border-gold-400 transition duration-300 shadow-[0_0_15px_rgba(212,175,55,0.15)]">
                         <i data-lucide="plus" class="w-5 h-5 sm:w-6 sm:h-6 text-gold-400 stroke-[2] animate-pulse"></i>
                     </div>
@@ -409,14 +410,15 @@ function renderGiftBox() {
                     </div>
                 </div>
 
-                <div class="w-full py-0.5 sm:py-1 rounded bg-white/5 border border-white/5 text-[8px] sm:text-[9px] font-mono text-center text-gray-400 group-hover:text-gold-300 group-hover:border-gold-500/30 transition">
+                <div class="w-full py-0.5 sm:py-1 rounded bg-white/5 border border-white/5 text-[8px] sm:text-[9px] font-mono text-center text-gray-400 group-hover:text-gold-300 group-hover:border-gold-500/30 transition pointer-events-none">
                     + SELECT
                 </div>
             `;
         } else {
             // FILLED SLOT WITH REAL BOTTLE PHOTOGRAPHY & DYNAMIC PRICE
             const slotPrice = perfume.prices[size];
-            slotEl.className = "coffret-slot slot-filled rounded-2xl p-2 sm:p-3.5 flex flex-col items-center justify-between transition-all duration-300 relative group";
+            slotEl.className = "coffret-slot slot-filled rounded-2xl p-2 sm:p-3.5 flex flex-col items-center justify-between transition-all duration-300 relative group cursor-pointer";
+            slotEl.onclick = () => handleSlotTap(slotIdx);
             slotEl.innerHTML = `
                 <!-- Slot Header & Remove Button -->
                 <div class="w-full flex items-center justify-between text-[8px] sm:text-[10px] font-mono relative z-10">
@@ -429,14 +431,14 @@ function renderGiftBox() {
                 </div>
 
                 <!-- Bottle Visual with Velvet Recess Ambient Glow & Translucent Flacon Glass -->
-                <div class="relative my-auto flex flex-col items-center justify-center h-28 sm:h-44 w-full py-1">
+                <div class="relative my-auto flex flex-col items-center justify-center h-28 sm:h-44 w-full py-1 pointer-events-none">
                     <div class="absolute inset-0 bg-radial ${perfume.auraGradient} opacity-75 mix-blend-screen pointer-events-none"></div>
                     <img src="${perfume.image}" alt="${perfume.name}" class="slot-flacon-mask box-flacon-translucent h-full w-auto max-h-[110px] sm:max-h-[165px] object-contain transform group-hover:scale-105 transition-all duration-300 pointer-events-none" loading="lazy">
                     <div class="flacon-pedestal-disc mt-1 pointer-events-none"></div>
                 </div>
 
                 <!-- Polished Brass Gold Plaque Nameplate with Exact Bottle Price -->
-                <div class="w-full brass-plaque rounded-lg px-1.5 py-1 sm:py-1.5 text-center relative z-10">
+                <div class="w-full brass-plaque rounded-lg px-1.5 py-1 sm:py-1.5 text-center relative z-10 pointer-events-none">
                     <h4 class="font-cinzel text-[10px] sm:text-xs font-black text-gold-200 uppercase tracking-wider truncate">
                         ${perfume.name}
                     </h4>
@@ -455,7 +457,7 @@ function renderGiftBox() {
     // 4. Update Box Stage Exterior Finish
     const boxStage = document.getElementById("gift-box-stage");
     if (boxStage) {
-        boxStage.className = `relative rounded-3xl p-4 sm:p-7 shadow-[0_30px_90px_rgba(0,0,0,0.98)] transition-all duration-500 border-2 box-theme-${APP.giftBox.boxFinish}`;
+        boxStage.className = `relative rounded-3xl p-4 sm:p-7 shadow-[0_30px_90px_rgba(0,0,0,0.98)] transition-all duration-500 box-theme-${APP.giftBox.boxFinish}`;
     }
 
     // 5. Update Ribbon Sash Badge
@@ -648,9 +650,11 @@ let activeDragPerfumeIndex = null;
 let isTouchDragging = false;
 let touchStartX = 0;
 let touchStartY = 0;
+let touchStartTime = 0;
 let currentHoveredSlot = null;
+let activeTargetSlot = null;
 
-function showDragAvatar(perfumeIndex, x, y) {
+function showDragAvatar(perfumeIndex, x, y, isTouch = false) {
     const avatar = document.getElementById("dragged-bottle-avatar");
     const img = document.getElementById("dragged-bottle-img");
     const nameEl = document.getElementById("dragged-bottle-name");
@@ -660,17 +664,20 @@ function showDragAvatar(perfumeIndex, x, y) {
     img.src = perfume.image;
     if (nameEl) nameEl.innerText = perfume.name;
     
+    // Float avatar 70px above touch coordinates on mobile so thumb never covers it
+    const offsetY = isTouch ? -70 : -35;
     avatar.style.left = `${x}px`;
-    avatar.style.top = `${y}px`;
+    avatar.style.top = `${y + offsetY}px`;
     avatar.classList.remove("hidden");
     avatar.style.display = "block";
 }
 
-function updateDragAvatarPos(x, y) {
+function updateDragAvatarPos(x, y, isTouch = false) {
     const avatar = document.getElementById("dragged-bottle-avatar");
     if (!avatar || avatar.classList.contains("hidden")) return;
+    const offsetY = isTouch ? -70 : -35;
     avatar.style.left = `${x}px`;
-    avatar.style.top = `${y}px`;
+    avatar.style.top = `${y + offsetY}px`;
 }
 
 function hideDragAvatar() {
@@ -680,23 +687,39 @@ function hideDragAvatar() {
     avatar.style.display = "none";
 }
 
-function getSlotUnderPoint(x, y) {
-    const avatar = document.getElementById("dragged-bottle-avatar");
-    const prevDisplay = avatar ? avatar.style.display : null;
-    if (avatar) avatar.style.display = "none";
+// Robust proximity hit-testing using bounding boxes with generous mobile touch margins
+function getSlotUnderPoint(x, y, isTouch = false) {
+    const testY = isTouch ? y - 70 : y;
+    const testX = x;
 
-    const el = document.elementFromPoint(x, y);
+    let closestSlot = null;
+    let minDistance = Infinity;
 
-    if (avatar && prevDisplay) avatar.style.display = prevDisplay;
-
-    if (!el) return null;
     for (let i = 0; i < 3; i++) {
         const slot = document.getElementById(`coffret-slot-${i}`);
-        if (slot && (slot === el || slot.contains(el))) {
-            return i;
+        if (!slot) continue;
+        const rect = slot.getBoundingClientRect();
+
+        // 35px generous padding on mobile touchscreen
+        const padX = isTouch ? 35 : 10;
+        const padY = isTouch ? 40 : 10;
+
+        if (
+            testX >= rect.left - padX &&
+            testX <= rect.right + padX &&
+            testY >= rect.top - padY &&
+            testY <= rect.bottom + padY
+        ) {
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const dist = Math.hypot(testX - cx, testY - cy);
+            if (dist < minDistance) {
+                minDistance = dist;
+                closestSlot = i;
+            }
         }
     }
-    return null;
+    return closestSlot;
 }
 
 function setHoveredSlot(slotIdx) {
@@ -720,10 +743,11 @@ function setHoveredSlot(slotIdx) {
     }
 }
 
-// Touch Event Handlers (Mobile)
+// Touch Event Handlers (Mobile-First Touchscreen Engine)
 function handleTouchStart(e, perfumeIndex) {
     activeDragPerfumeIndex = perfumeIndex;
     isTouchDragging = false;
+    touchStartTime = Date.now();
     const touch = e.touches[0];
     touchStartX = touch.clientX;
     touchStartY = touch.clientY;
@@ -737,27 +761,32 @@ function handleTouchMove(e) {
 
     // Only start bottle drag if moving UPWARDS towards the gift casket slots
     // If movement is horizontal (swiping carousel left/right), DO NOT intercept!
-    if (!isTouchDragging && dy < -22 && Math.abs(dy) > Math.abs(dx) * 1.3) {
+    if (!isTouchDragging && dy < -18 && Math.abs(dy) > Math.abs(dx) * 1.2) {
         isTouchDragging = true;
         playSfx('click');
         if (navigator.vibrate) navigator.vibrate(25);
+        // Illuminate all 3 slots with drop guides
+        document.querySelectorAll(".coffret-slot").forEach(s => s.classList.add("slot-drop-guide"));
     }
 
     if (isTouchDragging) {
-        // Prevent default screen scrolling during bottle drag
         if (e.cancelable) e.preventDefault();
         
-        showDragAvatar(activeDragPerfumeIndex, touch.clientX, touch.clientY);
+        // Float avatar 70px above thumb so user can clearly see where to drop
+        showDragAvatar(activeDragPerfumeIndex, touch.clientX, touch.clientY, true);
         
-        const slotIdx = getSlotUnderPoint(touch.clientX, touch.clientY);
+        const slotIdx = getSlotUnderPoint(touch.clientX, touch.clientY, true);
         setHoveredSlot(slotIdx);
     }
 }
 
 function handleTouchEnd(e, perfumeIndex) {
+    // Clear drop guides
+    document.querySelectorAll(".coffret-slot").forEach(s => s.classList.remove("slot-drop-guide"));
+
     if (isTouchDragging && activeDragPerfumeIndex !== null) {
         const touch = e.changedTouches[0];
-        const slotIdx = getSlotUnderPoint(touch.clientX, touch.clientY);
+        const slotIdx = getSlotUnderPoint(touch.clientX, touch.clientY, true);
         
         hideDragAvatar();
         setHoveredSlot(null);
@@ -773,11 +802,20 @@ function handleTouchEnd(e, perfumeIndex) {
         return;
     }
 
-    // Reset touch state
+    // Clean tap detection on mobile: if finger moved < 12px and touched for < 350ms
+    const touch = e.changedTouches[0];
+    const moveDist = Math.hypot(touch.clientX - touchStartX, touch.clientY - touchStartY);
+    const duration = Date.now() - touchStartTime;
+
     hideDragAvatar();
     setHoveredSlot(null);
     isTouchDragging = false;
     activeDragPerfumeIndex = null;
+
+    if (moveDist < 12 && duration < 350) {
+        // Instant tactile tap!
+        handlePalettePerfumeClick(perfumeIndex);
+    }
 }
 
 // Desktop HTML5 Drag Handlers
@@ -794,7 +832,7 @@ function handleDragStart(e, perfumeIndex) {
 function handleCardDrag(e) {
     if (e.clientX === 0 && e.clientY === 0) return;
     updateDragAvatarPos(e.clientX, e.clientY);
-    const slotIdx = getSlotUnderPoint(e.clientX, e.clientY);
+    const slotIdx = getSlotUnderPoint(e.clientX, e.clientY, false);
     setHoveredSlot(slotIdx);
 }
 
@@ -844,22 +882,46 @@ function animateSlotDrop(slotIndex) {
     }
 }
 
-// 1-Tap Quick Action (Instant Touch Friendly)
+// 1-Tap Quick Action (Instant Touch Friendly & Seamless Mobile Targeting)
 function handlePalettePerfumeClick(perfumeIndex) {
-    // Find first empty slot
-    let targetSlot = APP.giftBox.slots.findIndex(s => s === null);
-    if (targetSlot === -1) {
+    // If a slot was tapped and targeted, place into that slot
+    let targetSlot = activeTargetSlot !== null ? activeTargetSlot : APP.giftBox.slots.findIndex(s => s === null);
+    if (targetSlot === -1 || targetSlot === null) {
+        // If all slots are full, swap into slot 0 or cycle
         targetSlot = 0;
     }
     assignPerfumeToSlot(perfumeIndex, targetSlot);
+    animateSlotDrop(targetSlot);
+    
+    // Auto-advance targetSlot to next empty slot
+    activeTargetSlot = APP.giftBox.slots.findIndex(s => s === null);
+    if (activeTargetSlot === -1) activeTargetSlot = null;
 }
 
 function handleSlotTap(slotIndex) {
-    if (APP.giftBox.slots[slotIndex] === null) {
-        // Find a perfume not already in the box, or cycle
-        const available = PERFUMES.find(p => !APP.giftBox.slots.some(s => s && s.id === p.id)) || PERFUMES[0];
-        const pIdx = PERFUMES.findIndex(p => p.id === available.id);
-        assignPerfumeToSlot(pIdx, slotIndex);
+    playSfx('click');
+    activeTargetSlot = slotIndex;
+    
+    // Highlight the active target slot
+    document.querySelectorAll(".coffret-slot").forEach((el, idx) => {
+        if (idx === slotIndex) {
+            el.classList.add("slot-target-active");
+        } else {
+            el.classList.remove("slot-target-active");
+        }
+    });
+
+    const slotPerfume = APP.giftBox.slots[slotIndex];
+    if (slotPerfume) {
+        showToast(`Slot 0${slotIndex + 1} (${slotPerfume.name}) selected • Tap any scent below to swap`, "arrow-down-circle");
+    } else {
+        showToast(`Slot 0${slotIndex + 1} Active • Tap any scent below to place`, "sparkles");
+    }
+
+    // On mobile, smoothly ensure scent tray is in view
+    const tray = document.getElementById("scent-palette-tray");
+    if (tray && window.innerWidth < 768) {
+        tray.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 }
 
