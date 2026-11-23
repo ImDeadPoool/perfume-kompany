@@ -212,101 +212,232 @@ body {
 }
 
 /* ==========================================
-   BESPOKE 3-FLACON COFFRET GIFT BOX STYLING
+   STATE-OF-THE-ART LUXURY COFFRET PRESENTATION BOX
    ========================================== */
 
-/* Physical Luxury Open Coffret Box Container */
+/* Outer Coffret Box Frame */
 #gift-box-stage {
     position: relative;
+    border-radius: 28px;
+    padding: 24px;
     overflow: hidden;
-    background-image: 
-        radial-gradient(circle at 50% 20%, rgba(212, 175, 55, 0.12) 0%, transparent 60%),
-        linear-gradient(180deg, rgba(20, 22, 30, 0.95) 0%, rgba(10, 11, 15, 0.98) 100%);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 
-        0 25px 80px rgba(0, 0, 0, 0.95), 
-        inset 0 0 40px rgba(0, 0, 0, 0.9),
-        0 0 0 1px rgba(212, 175, 55, 0.35);
+        0 30px 90px rgba(0, 0, 0, 0.98), 
+        0 0 0 1px rgba(212, 175, 55, 0.35),
+        inset 0 0 50px rgba(0, 0, 0, 0.95);
 }
 
-/* Exterior Packaging Box Finishes */
+@media (max-width: 640px) {
+    #gift-box-stage {
+        padding: 16px 10px;
+        border-radius: 20px;
+    }
+}
+
+/* 4 Ornamental 24K Gold Corner Hardware Brackets */
+.gold-corner {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    pointer-events: none;
+    z-index: 15;
+}
+
+.gold-corner-tl {
+    top: 10px;
+    left: 10px;
+    border-top: 2.5px solid #f5d061;
+    border-left: 2.5px solid #f5d061;
+    border-top-left-radius: 6px;
+    box-shadow: -1px -1px 8px rgba(212, 175, 55, 0.4);
+}
+
+.gold-corner-tr {
+    top: 10px;
+    right: 10px;
+    border-top: 2.5px solid #f5d061;
+    border-right: 2.5px solid #f5d061;
+    border-top-right-radius: 6px;
+    box-shadow: 1px -1px 8px rgba(212, 175, 55, 0.4);
+}
+
+.gold-corner-bl {
+    bottom: 10px;
+    left: 10px;
+    border-bottom: 2.5px solid #f5d061;
+    border-left: 2.5px solid #f5d061;
+    border-bottom-left-radius: 6px;
+    box-shadow: -1px 1px 8px rgba(212, 175, 55, 0.4);
+}
+
+.gold-corner-br {
+    bottom: 10px;
+    right: 10px;
+    border-bottom: 2.5px solid #f5d061;
+    border-right: 2.5px solid #f5d061;
+    border-bottom-right-radius: 6px;
+    box-shadow: 1px 1px 8px rgba(212, 175, 55, 0.4);
+}
+
+/* Outer Box Color Finishes */
 .box-theme-obsidian {
-    background: radial-gradient(circle at 50% 30%, rgba(25, 28, 38, 0.95) 0%, rgba(8, 9, 13, 0.98) 100%) !important;
-    border-color: rgba(212, 175, 55, 0.45) !important;
-    box-shadow: 0 20px 70px rgba(0, 0, 0, 0.95), 0 0 35px rgba(212, 175, 55, 0.15) !important;
+    background: 
+        radial-gradient(ellipse at 50% 15%, rgba(35, 40, 52, 0.95) 0%, rgba(10, 11, 15, 0.98) 70%),
+        linear-gradient(180deg, #12141a 0%, #07080a 100%) !important;
+    border: 2px solid rgba(212, 175, 55, 0.5) !important;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(212, 175, 55, 0.15) !important;
 }
 
 .box-theme-emerald {
-    background: radial-gradient(circle at 50% 30%, rgba(6, 44, 28, 0.95) 0%, rgba(3, 20, 13, 0.98) 100%) !important;
-    border-color: rgba(16, 185, 129, 0.5) !important;
-    box-shadow: 0 20px 70px rgba(0, 0, 0, 0.95), 0 0 35px rgba(16, 185, 129, 0.2) !important;
+    background: 
+        radial-gradient(ellipse at 50% 15%, rgba(10, 58, 38, 0.95) 0%, rgba(3, 20, 13, 0.98) 70%),
+        linear-gradient(180deg, #093321 0%, #02120a 100%) !important;
+    border: 2px solid rgba(16, 185, 129, 0.6) !important;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(16, 185, 129, 0.22) !important;
 }
 
 .box-theme-alabaster {
-    background: radial-gradient(circle at 50% 30%, rgba(245, 245, 240, 0.15) 0%, rgba(20, 22, 28, 0.98) 100%) !important;
-    border-color: rgba(254, 240, 138, 0.6) !important;
-    box-shadow: 0 20px 70px rgba(0, 0, 0, 0.95), 0 0 35px rgba(254, 240, 138, 0.18) !important;
+    background: 
+        radial-gradient(ellipse at 50% 15%, rgba(255, 255, 250, 0.22) 0%, rgba(20, 22, 28, 0.98) 70%),
+        linear-gradient(180deg, #2a2c35 0%, #0d0f14 100%) !important;
+    border: 2px solid rgba(254, 240, 138, 0.65) !important;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(254, 240, 138, 0.2) !important;
 }
 
-/* Hand-Tied Silk Ribbon Decorative Overlay */
-.ribbon-band {
+/* Diagonal Ribbon Sash with Gold Foil Crest */
+.ribbon-sash-container {
     position: absolute;
     top: 0;
-    left: 48px;
-    width: 24px;
-    height: 100%;
-    z-index: 5;
-    opacity: 0.85;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    right: 0;
+    width: 140px;
+    height: 140px;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 12;
 }
 
-.ribbon-gold {
-    background: linear-gradient(90deg, #aa8012 0%, #f5d061 50%, #aa8012 100%);
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+.ribbon-sash {
+    position: absolute;
+    top: 26px;
+    right: -36px;
+    width: 160px;
+    transform: rotate(45deg);
+    text-align: center;
+    padding: 4px 0;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.7);
 }
 
-.ribbon-noir {
-    background: linear-gradient(90deg, #181a20 0%, #3a3f50 50%, #181a20 100%);
-    border-left: 1px solid rgba(255, 255, 255, 0.15);
-    border-right: 1px solid rgba(255, 255, 255, 0.15);
+.ribbon-sash-gold {
+    background: linear-gradient(90deg, #aa8012 0%, #fff0ad 50%, #d4af37 100%);
+    color: #000000;
+    border-top: 1px solid rgba(255, 255, 255, 0.5);
+    border-bottom: 1px solid rgba(170, 128, 18, 0.8);
 }
 
-.ribbon-ruby {
-    background: linear-gradient(90deg, #580816 0%, #be123c 50%, #580816 100%);
-    box-shadow: 0 0 20px rgba(190, 18, 60, 0.4);
+.ribbon-sash-noir {
+    background: linear-gradient(90deg, #111317 0%, #323744 50%, #111317 100%);
+    color: #f5d061;
+    border-top: 1px solid rgba(245, 208, 97, 0.4);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.9);
 }
 
-/* 3 Velvet Recessed Flacon Slots */
+.ribbon-sash-ruby {
+    background: linear-gradient(90deg, #600818 0%, #e11d48 50%, #600818 100%);
+    color: #ffffff;
+    border-top: 1px solid rgba(255, 255, 255, 0.4);
+    border-bottom: 1px solid rgba(70, 5, 15, 0.9);
+}
+
+/* The 3 Recessed Velvet Flacon Niches */
 .coffret-slot {
     position: relative;
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
-    background: rgba(10, 12, 16, 0.85);
-    box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.95), 0 4px 15px rgba(0, 0, 0, 0.5);
+    border-radius: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        inset 0 10px 28px rgba(0, 0, 0, 0.95),
+        inset 0 0 15px rgba(0, 0, 0, 0.8),
+        0 6px 18px rgba(0, 0, 0, 0.5);
 }
 
 .slot-empty {
-    border-style: dashed;
+    border: 2px dashed rgba(212, 175, 55, 0.35);
+    background: radial-gradient(circle at 50% 40%, rgba(18, 20, 26, 0.8) 0%, rgba(6, 7, 10, 0.95) 100%);
 }
 
 .slot-empty:hover {
     border-color: #f5d061;
+    background: radial-gradient(circle at 50% 40%, rgba(212, 175, 55, 0.08) 0%, rgba(8, 9, 13, 0.95) 100%);
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.2), inset 0 10px 30px rgba(0, 0, 0, 0.95);
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(212, 175, 55, 0.15), inset 0 4px 25px rgba(0, 0, 0, 0.95);
 }
 
 .slot-filled {
-    border-style: solid;
-    background: linear-gradient(180deg, rgba(22, 25, 34, 0.92) 0%, rgba(9, 10, 14, 0.98) 100%);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), inset 0 2px 10px rgba(212, 175, 55, 0.15);
+    border: 1.5px solid rgba(212, 175, 55, 0.55);
+    background: 
+        radial-gradient(circle at 50% 65%, rgba(212, 175, 55, 0.08) 0%, transparent 60%),
+        linear-gradient(180deg, rgba(20, 23, 31, 0.95) 0%, rgba(8, 9, 12, 0.98) 100%);
+    box-shadow: 
+        0 12px 35px rgba(0, 0, 0, 0.85),
+        inset 0 8px 24px rgba(0, 0, 0, 0.9),
+        0 0 18px rgba(212, 175, 55, 0.15);
 }
 
-/* Drag Over Highlight State */
+.slot-filled:hover {
+    border-color: rgba(245, 208, 97, 0.85);
+    box-shadow: 
+        0 16px 45px rgba(0, 0, 0, 0.9),
+        0 0 30px rgba(212, 175, 55, 0.25);
+    transform: translateY(-2px);
+}
+
+/* Dragging Highlight */
 .slot-drag-over {
-    border-color: #f5d061 !important;
-    background: rgba(212, 175, 55, 0.18) !important;
-    transform: scale(1.04);
-    box-shadow: 0 0 35px rgba(212, 175, 55, 0.6) !important;
+    border: 2px solid #f5d061 !important;
+    background: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.25) 0%, rgba(10, 12, 16, 0.95) 100%) !important;
+    transform: scale(1.03) !important;
+    box-shadow: 0 0 40px rgba(212, 175, 55, 0.7) !important;
+}
+
+/* Polished Brass Gold Plaque */
+.brass-plaque {
+    background: linear-gradient(180deg, #2b2513 0%, #17150c 50%, #0e0d08 100%);
+    border: 1px solid rgba(245, 208, 97, 0.55);
+    box-shadow: 
+        inset 0 1px 1px rgba(255, 247, 214, 0.4),
+        0 4px 12px rgba(0, 0, 0, 0.8);
+    position: relative;
+}
+
+.brass-plaque::before, .brass-plaque::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3.5px;
+    height: 3.5px;
+    border-radius: 50%;
+    background: #d4af37;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,0.8);
+}
+
+.brass-plaque::before { left: 4px; }
+.brass-plaque::after { right: 4px; }
+
+/* Flacon Reflection Under-Disc */
+.flacon-pedestal-disc {
+    width: 65%;
+    height: 8px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(212, 175, 55, 0.4) 0%, rgba(0, 0, 0, 0.7) 70%, transparent 100%);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
 }
 
 /* Scent Palette Tray Items */

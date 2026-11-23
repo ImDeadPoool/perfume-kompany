@@ -96,10 +96,6 @@
                     <span class="hidden lg:inline text-[10px]">SOUND ON</span>
                 </button>
 
-                <div class="hidden sm:flex items-center px-2.5 py-1.5 glass-panel rounded-xl text-[10px] font-bold text-gray-300 border border-white/10">
-                    <span class="text-gold-400 mr-1">₹</span> INR
-                </div>
-
                 <!-- Shopping Bag Button with Live Badge -->
                 <button onclick="openCartDrawer()" id="cart-nav-btn" class="gold-btn px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl text-black font-extrabold text-[11px] sm:text-xs uppercase tracking-wider flex items-center space-x-2 cursor-pointer shadow-lg active:scale-95">
                     <i data-lucide="shopping-bag" class="w-4 h-4 text-black stroke-[2.5]"></i>
@@ -150,43 +146,59 @@
                 <!-- Left: Physical Luxury Coffret Box with 3 Velvet Slots + Scent Tray -->
                 <div class="lg:col-span-7 space-y-6">
                     
-                    <!-- THE LUXURY COFFRET OPEN BOX CONTAINER -->
-                    <div id="gift-box-stage" class="relative rounded-3xl p-5 sm:p-7 shadow-[0_20px_70px_rgba(0,0,0,0.95)] transition-all duration-500 border-2 border-gold-500/40 box-theme-obsidian">
+                    <!-- THE LUXURY COFFRET OPEN PRESENTATION VAULT -->
+                    <div id="gift-box-stage" class="relative rounded-3xl p-4 sm:p-7 shadow-[0_30px_90px_rgba(0,0,0,0.98)] transition-all duration-500 border-2 box-theme-obsidian">
                         
-                        <!-- Box Ribbon Trim Accent (Visual decorative silk band overlay) -->
-                        <div id="box-ribbon-band" class="ribbon-band ribbon-gold pointer-events-none"></div>
+                        <!-- 4 24K Gold Corner Hardware Brackets -->
+                        <div class="gold-corner gold-corner-tl"></div>
+                        <div class="gold-corner gold-corner-tr"></div>
+                        <div class="gold-corner gold-corner-bl"></div>
+                        <div class="gold-corner gold-corner-br"></div>
 
-                        <!-- Box Header inside Lid / Upper Rim -->
-                        <div class="flex items-center justify-between pb-4 border-b border-gold-500/20 relative z-10">
-                            <div class="flex items-center space-x-2.5">
-                                <div class="w-8 h-8 rounded-xl bg-gold-500/20 border border-gold-500/40 flex items-center justify-center">
-                                    <i data-lucide="gift" class="w-4 h-4 text-gold-400"></i>
+                        <!-- Diagonal Ribbon Sash with Gold PK Seal -->
+                        <div class="ribbon-sash-container">
+                            <div id="ribbon-sash-badge" class="ribbon-sash ribbon-sash-gold">
+                                PK • VAULT
+                            </div>
+                        </div>
+
+                        <!-- Coffret Interior Lid & Header -->
+                        <div class="flex items-center justify-between pb-3.5 sm:pb-4 border-b border-gold-500/25 relative z-10">
+                            <div class="flex items-center space-x-2.5 sm:space-x-3">
+                                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-gold-500/30 to-amber-900/40 border border-gold-500/50 flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.25)]">
+                                    <i data-lucide="crown" class="w-5 h-5 text-gold-400"></i>
                                 </div>
                                 <div>
-                                    <span class="font-cinzel text-xs sm:text-sm font-black tracking-widest text-white uppercase block">
-                                        PERFUME KOMPANY <span class="text-gold-400">// COFFRET VAULT</span>
-                                    </span>
-                                    <span class="text-[9px] uppercase tracking-wider text-gray-400 block" id="gift-box-size-title">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="font-cinzel text-xs sm:text-base font-black tracking-widest text-white uppercase block">
+                                            PERFUME KOMPANY
+                                        </span>
+                                        <span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-gold-500/20 text-gold-300 border border-gold-500/30 font-bold uppercase hidden sm:inline">
+                                            ROYAL COFFRET
+                                        </span>
+                                    </div>
+                                    <span class="text-[9px] sm:text-[10px] uppercase tracking-wider text-gray-300 block mt-0.5" id="gift-box-size-title">
                                         HAND-CRAFTED 3 × 25ML POCKET DISCOVERY SET
                                     </span>
                                 </div>
                             </div>
+
                             <div class="flex items-center space-x-2">
                                 <span id="slot-counter-badge" class="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-gold-500/20 text-gold-300 border border-gold-500/40">
                                     0 / 3 SLOTS FILLED
                                 </span>
-                                <button onclick="clearGiftBoxSlots()" class="p-1.5 rounded-lg glass-panel text-gray-400 hover:text-white transition" title="Reset All 3 Slots">
+                                <button onclick="clearGiftBoxSlots()" class="p-1.5 sm:p-2 rounded-xl glass-panel text-gray-400 hover:text-white transition" title="Reset All 3 Slots">
                                     <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- 3 RECESSED VELVET FLACON SLOTS -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-5 pb-3 relative z-10">
+                        <!-- 3 RECESSED VELVET FLACON NICHES (SIDE-BY-SIDE ON ALL SCREENS) -->
+                        <div class="grid grid-cols-3 gap-2 sm:gap-4.5 pt-4 sm:pt-6 pb-3 relative z-10">
                             
                             <!-- Slot 1 -->
                             <div id="coffret-slot-0" 
-                                 class="coffret-slot rounded-2xl p-4 flex flex-col items-center justify-between transition-all duration-300 cursor-pointer min-h-[250px] sm:min-h-[280px] relative group"
+                                 class="coffret-slot rounded-2xl p-2 sm:p-4 flex flex-col items-center justify-between transition-all duration-300 cursor-pointer min-h-[220px] sm:min-h-[290px] relative group"
                                  ondragover="handleSlotDragOver(event, 0)"
                                  ondragleave="handleSlotDragLeave(event, 0)"
                                  ondrop="handleSlotDrop(event, 0)"
@@ -196,7 +208,7 @@
 
                             <!-- Slot 2 -->
                             <div id="coffret-slot-1" 
-                                 class="coffret-slot rounded-2xl p-4 flex flex-col items-center justify-between transition-all duration-300 cursor-pointer min-h-[250px] sm:min-h-[280px] relative group"
+                                 class="coffret-slot rounded-2xl p-2 sm:p-4 flex flex-col items-center justify-between transition-all duration-300 cursor-pointer min-h-[220px] sm:min-h-[290px] relative group"
                                  ondragover="handleSlotDragOver(event, 1)"
                                  ondragleave="handleSlotDragLeave(event, 1)"
                                  ondrop="handleSlotDrop(event, 1)"
@@ -206,7 +218,7 @@
 
                             <!-- Slot 3 -->
                             <div id="coffret-slot-2" 
-                                 class="coffret-slot rounded-2xl p-4 flex flex-col items-center justify-between transition-all duration-300 cursor-pointer min-h-[250px] sm:min-h-[280px] relative group"
+                                 class="coffret-slot rounded-2xl p-2 sm:p-4 flex flex-col items-center justify-between transition-all duration-300 cursor-pointer min-h-[220px] sm:min-h-[290px] relative group"
                                  ondragover="handleSlotDragOver(event, 2)"
                                  ondragleave="handleSlotDragLeave(event, 2)"
                                  ondrop="handleSlotDrop(event, 2)"
@@ -217,10 +229,10 @@
                         </div>
 
                         <!-- Bottom Velvet Plate & Engraving Banner -->
-                        <div class="mt-2 pt-3 border-t border-gold-500/20 flex flex-col sm:flex-row items-center justify-between text-[10px] text-gray-400 gap-2 relative z-10">
+                        <div class="mt-2 pt-3 border-t border-gold-500/20 flex flex-col sm:flex-row items-center justify-between text-[9px] sm:text-[10px] text-gray-400 gap-1.5 sm:gap-2 relative z-10">
                             <span class="flex items-center space-x-1.5">
                                 <i data-lucide="shield-check" class="w-3.5 h-3.5 text-gold-400"></i>
-                                <span>Lined in Obsidian Velvet • Magnetic Closure • Gold Foil Stamped</span>
+                                <span>Recessed Obsidian Velvet Niches • Magnetic Clasp • 24K Gold Stamped</span>
                             </span>
                             <span class="text-gold-400 font-mono font-bold" id="gift-box-packaging-label">
                                 WRAP: OBSIDIAN NOIR + 24K GOLD SILK

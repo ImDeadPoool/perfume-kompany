@@ -333,56 +333,57 @@ function renderGiftBox() {
 
         if (!perfume) {
             // EMPTY SLOT
-            slotEl.className = "coffret-slot slot-empty rounded-2xl p-4 flex flex-col items-center justify-between transition-all duration-300 cursor-pointer min-h-[250px] sm:min-h-[280px] relative group border-2 border-dashed border-gold-500/30 hover:border-gold-400 bg-black/40 hover:bg-gold-500/5";
+            slotEl.className = "coffret-slot slot-empty rounded-2xl p-2 sm:p-3.5 flex flex-col items-center justify-between transition-all duration-300 cursor-pointer min-h-[220px] sm:min-h-[290px] relative group";
             slotEl.innerHTML = `
-                <div class="w-full flex items-center justify-between text-[10px] font-mono text-gold-400/70">
-                    <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10 uppercase">SLOT 0${slotIdx + 1}</span>
-                    <span class="text-gray-500">OPEN</span>
+                <div class="w-full flex items-center justify-between text-[8px] sm:text-[10px] font-mono text-gold-400/80">
+                    <span class="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 uppercase">SLOT 0${slotIdx + 1}</span>
+                    <span class="text-gray-400">OPEN</span>
                 </div>
                 
-                <div class="my-auto flex flex-col items-center justify-center space-y-2 py-4">
-                    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gold-500/10 border border-gold-500/30 flex items-center justify-center group-hover:scale-110 group-hover:border-gold-400 transition duration-300 shadow-[0_0_20px_rgba(212,175,55,0.15)]">
-                        <i data-lucide="plus" class="w-6 h-6 sm:w-7 sm:h-7 text-gold-400 stroke-[2] animate-pulse"></i>
+                <div class="my-auto flex flex-col items-center justify-center space-y-1.5 sm:space-y-2 py-2 sm:py-4">
+                    <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-gold-500/10 border border-gold-500/30 flex items-center justify-center group-hover:scale-110 group-hover:border-gold-400 transition duration-300 shadow-[0_0_15px_rgba(212,175,55,0.15)]">
+                        <i data-lucide="plus" class="w-5 h-5 sm:w-6 sm:h-6 text-gold-400 stroke-[2] animate-pulse"></i>
                     </div>
-                    <div class="text-center px-2">
-                        <span class="text-xs font-bold text-gray-200 block uppercase font-cinzel">Choose Flacon</span>
-                        <span class="text-[10px] text-gold-400/80 block mt-0.5">Drag bottle here or tap below</span>
+                    <div class="text-center px-1">
+                        <span class="text-[10px] sm:text-xs font-bold text-gray-200 block uppercase font-cinzel">Choose Scent</span>
+                        <span class="text-[8px] sm:text-[9px] text-gold-400/90 block mt-0.5">Tap bottle below</span>
                     </div>
                 </div>
 
-                <div class="w-full py-1 rounded-lg bg-white/5 border border-white/5 text-[9px] font-mono text-center text-gray-400 group-hover:text-gold-300 group-hover:border-gold-500/30 transition">
-                    TAP TO QUICK CHOOSE
+                <div class="w-full py-0.5 sm:py-1 rounded bg-white/5 border border-white/5 text-[8px] sm:text-[9px] font-mono text-center text-gray-400 group-hover:text-gold-300 group-hover:border-gold-500/30 transition">
+                    + SELECT
                 </div>
             `;
         } else {
             // FILLED SLOT WITH REAL BOTTLE PHOTOGRAPHY
-            slotEl.className = "coffret-slot slot-filled rounded-2xl p-4 flex flex-col items-center justify-between transition-all duration-300 relative group border-2 border-gold-500/50 bg-gradient-to-b from-neutral-900/90 to-black/95 shadow-[0_10px_30px_rgba(0,0,0,0.8)]";
+            slotEl.className = "coffret-slot slot-filled rounded-2xl p-2 sm:p-3.5 flex flex-col items-center justify-between transition-all duration-300 relative group";
             slotEl.innerHTML = `
                 <!-- Slot Header & Remove Button -->
-                <div class="w-full flex items-center justify-between text-[10px] font-mono relative z-10">
-                    <span class="px-2 py-0.5 rounded bg-gold-500/20 text-gold-300 border border-gold-500/40 uppercase font-bold">
-                        SLOT 0${slotIdx + 1}
+                <div class="w-full flex items-center justify-between text-[8px] sm:text-[10px] font-mono relative z-10">
+                    <span class="px-1.5 py-0.5 rounded bg-gold-500/25 text-gold-300 border border-gold-500/40 uppercase font-bold text-[8px] sm:text-[9px]">
+                        0${slotIdx + 1}
                     </span>
-                    <button onclick="event.stopPropagation(); removePerfumeFromSlot(${slotIdx})" class="w-6 h-6 rounded-full bg-black/80 hover:bg-red-950 text-gray-400 hover:text-red-400 border border-white/20 hover:border-red-500 flex items-center justify-center transition shadow-lg" title="Remove or Swap this bottle">
-                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    <button onclick="event.stopPropagation(); removePerfumeFromSlot(${slotIdx})" class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-black/85 hover:bg-red-950 text-gray-400 hover:text-red-400 border border-white/20 hover:border-red-500 flex items-center justify-center transition shadow-lg" title="Remove or swap this flacon">
+                        <i data-lucide="x" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
                     </button>
                 </div>
 
-                <!-- Bottle Visual with Velvet Recess Ambient Glow -->
-                <div class="relative my-1 flex items-center justify-center h-36 sm:h-44 w-full">
-                    <div class="absolute inset-0 bg-radial ${perfume.auraGradient} opacity-60 mix-blend-screen pointer-events-none"></div>
-                    <img src="${perfume.image}" alt="${perfume.name}" class="h-full w-auto object-contain filter drop-shadow-[0_12px_25px_rgba(0,0,0,0.95)] transform group-hover:scale-105 transition-transform duration-300" loading="lazy">
+                <!-- Bottle Visual with Velvet Recess Ambient Glow & Pedestal -->
+                <div class="relative my-auto flex flex-col items-center justify-center h-28 sm:h-44 w-full py-1">
+                    <div class="absolute inset-0 bg-radial ${perfume.auraGradient} opacity-70 mix-blend-screen pointer-events-none"></div>
+                    <img src="${perfume.image}" alt="${perfume.name}" class="h-full w-auto max-h-[110px] sm:max-h-[165px] object-contain filter drop-shadow-[0_12px_22px_rgba(0,0,0,0.95)] transform group-hover:scale-105 transition-transform duration-300 pointer-events-none" loading="lazy">
+                    <div class="flacon-pedestal-disc mt-1 pointer-events-none"></div>
                 </div>
 
-                <!-- 24K Gold Embossed Plaque Nameplate -->
-                <div class="w-full pt-2 border-t border-gold-500/30 text-center relative z-10">
-                    <h4 class="font-cinzel text-xs sm:text-sm font-black text-white uppercase tracking-wider truncate">
+                <!-- Polished Brass Gold Plaque Nameplate -->
+                <div class="w-full brass-plaque rounded-lg px-1.5 py-1 sm:py-1.5 text-center relative z-10">
+                    <h4 class="font-cinzel text-[10px] sm:text-xs font-black text-gold-200 uppercase tracking-wider truncate">
                         ${perfume.name}
                     </h4>
-                    <div class="flex items-center justify-center space-x-1.5 mt-0.5">
-                        <span class="text-[9px] font-mono text-gold-400 font-bold">${size} ML EXTRAIT</span>
-                        <span class="text-gray-500">•</span>
-                        <span class="text-[9px] text-emerald-400 font-bold">35% PURE</span>
+                    <div class="flex items-center justify-center space-x-1 mt-0.5 text-[7px] sm:text-[8px] font-mono text-gold-400 font-bold">
+                        <span>${size}ML</span>
+                        <span>•</span>
+                        <span class="text-emerald-400">35% EXTRAIT</span>
                     </div>
                 </div>
             `;
@@ -392,13 +393,14 @@ function renderGiftBox() {
     // 4. Update Box Stage Exterior Finish
     const boxStage = document.getElementById("gift-box-stage");
     if (boxStage) {
-        boxStage.className = `relative rounded-3xl p-5 sm:p-7 shadow-[0_20px_70px_rgba(0,0,0,0.95)] transition-all duration-500 border-2 box-theme-${APP.giftBox.boxFinish}`;
+        boxStage.className = `relative rounded-3xl p-4 sm:p-7 shadow-[0_30px_90px_rgba(0,0,0,0.98)] transition-all duration-500 border-2 box-theme-${APP.giftBox.boxFinish}`;
     }
 
-    // 5. Update Silk Ribbon Band Overlay
-    const ribbonBand = document.getElementById("box-ribbon-band");
-    if (ribbonBand) {
-        ribbonBand.className = `ribbon-band ribbon-${APP.giftBox.ribbon} pointer-events-none`;
+    // 5. Update Ribbon Sash Badge
+    const ribbonSash = document.getElementById("ribbon-sash-badge");
+    if (ribbonSash) {
+        ribbonSash.className = `ribbon-sash ribbon-sash-${APP.giftBox.ribbon}`;
+        ribbonSash.innerText = APP.giftBox.ribbon === 'gold' ? '24K • GOLD' : (APP.giftBox.ribbon === 'noir' ? 'NOIR • SATIN' : 'ROYAL • RUBY');
     }
 
     // 6. Update Packaging Label
