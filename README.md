@@ -1,36 +1,42 @@
 # Perfume Kompany - State-of-the-Art Luxury E-Commerce Website
 
-An ultra-modern, interactive luxury e-commerce experience designed for **Perfume Kompany**, featuring our 5 signature Extraits de Parfum with 35% pure oil concentration.
+An ultra-modern, interactive luxury e-commerce experience designed for **Perfume Kompany**, featuring our 5 signature Extraits de Parfum with 35% pure oil concentration and our interactive **Bespoke 3-Flacon Luxury Gift Box Studio**.
 
 ---
 
 ## 🚀 How to View the Website
-No server installation or build step is required. It is pure, high-performance HTML5, CSS3, and Three.js running client-side.
+No server installation or build step is required. It is pure, high-performance HTML5, CSS3, and JavaScript running client-side.
 
 1. Open your File Explorer to:
    `D:\Praveen\new website\`
 2. Double-click **`index.html`** (or open with Google Chrome / Brave / Safari / Edge).
-3. The website will load instantly with 60 FPS WebGL rendering!
+3. The website will load instantly!
 4. **Live GitHub Pages URL**: `https://imdeadpoool.github.io/perfume-kompany/`
 
 ---
 
 ## ✨ Features & Architecture
 
-### 1. Interactive 3D Flacon Studio
-- **Real-Time 3D WebGL Rendering**: Crystal glass refraction, radiant colored liquid cores, solid glass base, and 24K diamond-knurled gold caps.
-- **Dynamic 25ml, 50ml & 100ml Morphing**: Toggle between 25ml Pocket Extrait, 50ml Signature Flacon, and 100ml Grand Collector Flacon—the 3D bottle physically morphs its proportions, scales smoothly, and updates its gold-embossed plaque label in real time.
-- **360° Touch & Mouse Physics**: Click or drag across the stage to spin the bottle with natural inertia momentum and vertical tilt clamping.
-- **Auto 360° Spin**: Hands-free turntable spin mode.
+### 1. Bespoke 3-Flacon Luxury Gift Box Creation Studio ("Curated Discovery Coffret")
+- **Drag-and-Drop + 1-Tap Mobile Slotting**: Curate your personalized 3-perfume coffret box by dragging any 3 of the 5 signature flacons directly into the velvet slots, or simply tap on mobile phones.
+- **Physical Luxury Presentation Stage**: Authentic flacon photography seated inside recessed obsidian velvet cushions with gold-foil nameplates and volume specs.
+- **Coffret Volume Options**:
+  - **3 × 25 ML Pocket Trio**: ₹1,499 (Bundle savings ₹248)
+  - **3 × 50 ML Signature Set**: ₹2,299 (Bundle savings ₹298)
+  - **3 × 100 ML Grand Collector Set**: ₹3,199 (Bundle savings ₹398)
+- **Luxury Box Finishes**: Obsidian Noir, Emerald Gold, or Diamond Pearl.
+- **Hand-Tied Silk Ribbon Wraps**: 24K Liquid Gold Silk, Midnight Satin, or Royal Ruby.
+- **Complimentary Engraved Gold Gift Card**: Live cursive preview of Recipient Name, Sender, and personalized custom message.
+- **Instant Actions**: One-click "Add Gift Vault to Bag" and direct WhatsApp order generator.
 
-### 2. Pricing & Sizing (₹500 to ₹1,200)
+### 2. Pricing & Sizing (₹500 to ₹1,200 for Individual Flacons)
 - **25 ML Pocket Extrait**: ₹549 – ₹599 (Compact travel luxury flacon).
 - **50 ML Signature Flacon**: ₹799 – ₹899 (Classic architectural daily wear flacon).
 - **100 ML Grand Collector**: ₹1,099 – ₹1,199 (Heavy solid crystal collector flacon).
 
 ### 3. Mobile-First Responsive Design
-- Optimized for smartphones (iOS Safari & Android Chrome) with touch gestures, responsive bottom-sheet cart drawer, thumb-friendly size toggles, and safe-area notch padding.
-- Expands seamlessly into an editorial luxury showcase on tablets and desktop displays.
+- Built for seamless smartphone viewing (iOS Safari & Android Chrome) with touch drag-and-drop, 1-tap slot placing, slide-over cart drawer, and notch-safe spacing.
+- Responsive layout transitions smoothly between mobile vertical stacks and desktop horizontal editorial layouts.
 
 ### 4. The 5 Signature Extraits (With Real Photography)
 - **ONE BILLION**: Blood Mandarin, Frosted Grapefruit, Blonde Tuscan Leather, Amber Ketals.
@@ -44,10 +50,10 @@ No server installation or build step is required. It is pure, high-performance H
 - Real longevity (14–16+ hours) and room-filling sillage ratings.
 
 ### 6. "Find Your Scent" Consultation Quiz
-- A 3-step recommendation tool matching the user's presence, occasion, and projection style to their ideal signature fragrance with 1-click Add to Bag.
+- A 3-step recommendation tool matching the user's presence, occasion, and projection style to their ideal signature fragrance with 1-click Add to Gift Box or Bag.
 
 ### 7. Shopping Bag & Comprehensive Checkout
-- Slide-over luxury cart drawer with itemized list, quantity adjustment, and coupon code support (`PK10` for 10% off).
+- Slide-over luxury cart drawer with itemized list (including full breakdown of custom gift boxes), quantity adjustment, and coupon code support (`PK10` for 10% off).
 - Free Express VIP Courier across India.
 - **Payment Options**: UPI / QR Code (GPay, PhonePe, Paytm), Debit & Credit Cards (Visa, RuPay, Mastercard), Net Banking, and Cash on Delivery (COD).
 - **1-Click WhatsApp Ordering**: Automatically formats an itemized order message ready to send to the brand representative.

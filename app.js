@@ -171,10 +171,15 @@ const PERFUMES = [
 
 // Application State
 const APP = {
-    activeStudioPerfumeIndex: 0,
-    activeStudioSize: 100, // 25, 50, or 100 ML
-    studioQty: 1,
-    studioAutoSpin: true,
+    giftBox: {
+        slots: [PERFUMES[0], PERFUMES[1], null], // Pre-populate Slot 1 & 2 so user immediately sees how gorgeous it is!
+        size: 25, // 25, 50, or 100 ML
+        boxFinish: 'obsidian', // 'obsidian', 'emerald', 'alabaster'
+        ribbon: 'gold', // 'gold', 'noir', 'ruby'
+        recipient: '',
+        sender: '',
+        message: ''
+    },
     cardSelectedSizes: { 0: 50, 1: 50, 2: 50, 3: 50, 4: 50 },
     activePyramidIndex: 0,
     soundEnabled: true,
@@ -269,618 +274,514 @@ function toggleSound() {
 }
 
 // ==========================================
-// 3D WEBGL FLACON STUDIO (THREE.JS)
+// BESPOKE 3-FLACON LUXURY GIFT VAULT STUDIO
 // ==========================================
-let studioScene, studioCamera, studioRenderer, studioControls;
-let studioFlaconGroup = null;
-let studioLiquidMesh = null;
-let studioFrontLabelMesh = null;
-let studioBackLabelMesh = null;
-let studioUnderlight = null;
-let studioClock = new THREE.Clock();
 
-// Direct Flacon Touch & Drag Physics State
-let isDraggingFlacon = false;
-let flaconRotY = 0;
-let flaconRotX = 0;
-let flaconVelY = 0;
-let flaconVelX = 0;
-let lastPointerX = 0;
-let lastPointerY = 0;
-let targetFlaconScale = new THREE.Vector3(1.0, 1.0, 1.0);
-let currentFlaconScale = new THREE.Vector3(1.0, 1.0, 1.0);
+const GIFT_BOX_PRICING = {
+    25: { price: 1499, regular: 1747, savings: 248, label: "3 × 25 ML Pocket Trio" },
+    50: { price: 2299, regular: 2597, savings: 298, label: "3 × 50 ML Signature Set" },
+    100: { price: 3199, regular: 3597, savings: 398, label: "3 × 100 ML Grand Imperial Set" }
+};
 
-function init3DStudio() {
-    const container = document.getElementById("studio-canvas-container");
-    const canvas = document.getElementById("studio-webgl-canvas");
-    if (!container || !canvas) return;
+let draggedPerfumeIndex = null;
+let activeTouchPerfumeIndex = null;
 
-    const width = container.clientWidth || 600;
-    const height = container.clientHeight || 500;
-
-    // 1. Scene
-    studioScene = new THREE.Scene();
-    studioScene.fog = new THREE.FogExp2(0x07080b, 0.04);
-
-    // 2. Camera
-    studioCamera = new THREE.PerspectiveCamera(40, width / height, 0.1, 50);
-    studioCamera.position.set(0, 0.35, 4.4);
-    studioCamera.lookAt(0, 0.05, 0);
-
-    // 3. Renderer
-    studioRenderer = new THREE.WebGLRenderer({
-        canvas: canvas,
-        antialias: true,
-        alpha: true,
-        powerPreference: "high-performance"
-    });
-    studioRenderer.setSize(width, height);
-    studioRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    studioRenderer.shadowMap.enabled = true;
-    studioRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-    // 4. Studio Lighting
-    const ambientLight = new THREE.AmbientLight(0xfff6ea, 1.4);
-    studioScene.add(ambientLight);
-
-    const keySpot = new THREE.SpotLight(0xfffbeb, 2.6, 20, Math.PI / 5, 0.4);
-    keySpot.position.set(2.5, 5.5, 4.0);
-    keySpot.castShadow = true;
-    keySpot.shadow.mapSize.width = 1024;
-    keySpot.shadow.mapSize.height = 1024;
-    studioScene.add(keySpot);
-
-    const rimLight = new THREE.DirectionalLight(0xffeedd, 1.5);
-    rimLight.position.set(-3.5, 4.0, -3.0);
-    studioScene.add(rimLight);
-
-    // Color-matched Under-glow Light for Flacon
-    const activePerfume = PERFUMES[APP.activeStudioPerfumeIndex];
-    studioUnderlight = new THREE.PointLight(activePerfume.liquidColor, 2.5, 6.0);
-    studioUnderlight.position.set(0, -0.75, 0.3);
-    studioScene.add(studioUnderlight);
-
-    // 5. Polished Obsidian Mirror Pedestal Floor
-    const floorGeo = new THREE.CylinderGeometry(1.4, 1.45, 0.15, 64);
-    const floorMat = new THREE.MeshStandardMaterial({
-        color: 0x0a0c10,
-        roughness: 0.12,
-        metalness: 0.85
-    });
-    const pedestal = new THREE.Mesh(floorGeo, floorMat);
-    pedestal.position.y = -0.92;
-    pedestal.receiveShadow = true;
-    studioScene.add(pedestal);
-
-    // 24K Gold Trim Ring around Pedestal
-    const ringGeo = new THREE.TorusGeometry(1.4, 0.018, 16, 64);
-    const ringMat = new THREE.MeshStandardMaterial({ color: 0xf5d061, metalness: 0.95, roughness: 0.15 });
-    const goldRing = new THREE.Mesh(ringGeo, ringMat);
-    goldRing.rotation.x = Math.PI / 2;
-    goldRing.position.y = -0.84;
-    studioScene.add(goldRing);
-
-    // 6. Build the 3D Flacon
-    buildStudioFlacon();
-
-    // 7. Setup Direct Pointer Events on 3D Container
-    setupStudioInput(container);
-
-    // 8. Responsive Resize
-    window.addEventListener("resize", onStudioResize);
-
-    // 9. Start Animation Loop
-    animateStudio();
+function initGiftBoxStudio() {
+    renderGiftBox();
+    renderScentPaletteTray();
+    updateGiftCardPreview();
 }
 
-function onStudioResize() {
-    const container = document.getElementById("studio-canvas-container");
-    if (!container || !studioRenderer || !studioCamera) return;
-
-    const width = container.clientWidth;
-    const height = container.clientHeight;
-
-    studioCamera.aspect = width / height;
-    if (width < 640) {
-        studioCamera.fov = 46;
-        studioCamera.position.z = 4.8;
-    } else {
-        studioCamera.fov = 40;
-        studioCamera.position.z = 4.4;
-    }
-    studioCamera.updateProjectionMatrix();
-    studioRenderer.setSize(width, height);
+function getGiftBoxPrice(size) {
+    return GIFT_BOX_PRICING[size] ? GIFT_BOX_PRICING[size].price : 1499;
 }
 
-// Procedural 24K Gold Embossed Plaque Texture
-function generateProceduralPlaque(perfume, size, isBack = false) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 768;
-    const ctx = canvas.getContext('2d');
+function renderGiftBox() {
+    const size = APP.giftBox.size;
+    const pricing = GIFT_BOX_PRICING[size];
 
-    // Rich matte black leather background
-    ctx.fillStyle = '#08090d';
-    ctx.fillRect(0, 0, 512, 768);
-
-    // Fine grain texture
-    for (let i = 0; i < 7000; i++) {
-        const x = Math.random() * 512;
-        const y = Math.random() * 768;
-        const s = Math.random() > 0.5 ? 26 : 14;
-        ctx.fillStyle = `rgb(${s},${s},${s})`;
-        ctx.fillRect(x, y, 1.5, 1.5);
+    // 1. Update Box Header & Size Title
+    const sizeTitleEl = document.getElementById("gift-box-size-title");
+    if (sizeTitleEl) {
+        sizeTitleEl.innerText = `HAND-CRAFTED ${pricing.label.toUpperCase()}`;
     }
 
-    // Outer Gold Foil Border
-    ctx.strokeStyle = '#d4af37';
-    ctx.lineWidth = 6;
-    ctx.strokeRect(24, 24, 464, 720);
+    const boxVolumeSummary = document.getElementById("box-volume-summary");
+    if (boxVolumeSummary) {
+        boxVolumeSummary.innerText = `${pricing.label}`;
+    }
 
-    // Inner Thin Gold Line
-    ctx.strokeStyle = '#f5d061';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(32, 32, 448, 704);
-
-    if (!isBack) {
-        // FRONT FACE: EMBOSSED GOLD MONOGRAM & TITLE
-        ctx.strokeStyle = '#f5d061';
-        ctx.lineWidth = 3.5;
-        ctx.strokeRect(238, 85, 36, 22);
-        ctx.strokeRect(208, 112, 96, 110);
-
-        // "PK" Monogram
-        ctx.font = 'bold 52px "Cinzel", Georgia, serif';
-        ctx.fillStyle = '#f5d061';
-        ctx.textAlign = 'center';
-        ctx.fillText('PK', 256, 192);
-
-        // "PERFUME KOMPANY"
-        ctx.font = '700 24px "Cinzel", Georgia, serif';
-        ctx.fillStyle = '#f5d061';
-        ctx.fillText('PERFUME', 256, 275);
-
-        ctx.font = '700 16px "Montserrat", sans-serif';
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText('KOMPANY', 256, 305);
-
-        // Divider Line
-        ctx.strokeStyle = '#d4af37';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(160, 335);
-        ctx.lineTo(352, 335);
-        ctx.stroke();
-
-        // Fragrance Name
-        ctx.font = '900 40px "Cinzel", serif';
-        ctx.fillStyle = '#f5d061';
-        ctx.fillText(perfume.name, 256, 435);
-
-        // Subtitle
-        ctx.font = 'italic 24px "Cinzel", serif';
-        ctx.fillStyle = '#e2e8f0';
-        ctx.fillText('Extrait De Parfum', 256, 500);
-
-        // Volume specification (25 ML / 50 ML / 100 ML)
-        ctx.font = '800 22px "Montserrat", sans-serif';
-        ctx.fillStyle = '#f5d061';
-        ctx.fillText(`${size} ML • 35% EXTRAIT`, 256, 565);
-    } else {
-        // BACK FACE: AUTHENTIC BATCH CERTIFICATE & GOLD BARCODE
-        ctx.textAlign = 'center';
-
-        ctx.font = 'bold 44px "Cinzel", serif';
-        ctx.fillStyle = '#f5d061';
-        ctx.fillText('PK', 256, 120);
-
-        ctx.font = '700 18px "Montserrat", sans-serif';
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText('PERFUME KOMPANY', 256, 160);
-
-        ctx.strokeStyle = '#d4af37';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(140, 185);
-        ctx.lineTo(372, 185);
-        ctx.stroke();
-
-        ctx.font = '600 17px "Montserrat", sans-serif';
-        ctx.fillStyle = '#f5d061';
-        ctx.fillText('AUTHENTIC EXTRAIT DE PARFUM', 256, 235);
-
-        ctx.font = '400 15px "Montserrat", sans-serif';
-        ctx.fillStyle = '#cbd5e1';
-        ctx.fillText('HAND-POURED IN MICRO-BATCHES', 256, 275);
-        ctx.fillText('35% ESSENTIAL OIL CONCENTRATION', 256, 305);
-        ctx.fillText('NATURAL MATURED EXTRACTS', 256, 335);
-
-        ctx.font = '700 14px "Space Grotesk", monospace';
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillText(`BATCH REF: PK-2026-0${perfume.id}`, 256, 395);
-        ctx.fillText(`VOLUME: ${size} ML FLACON`, 256, 425);
-
-        // Gold Barcode
-        ctx.fillStyle = '#f5d061';
-        const barWidths = [4, 2, 6, 2, 4, 8, 2, 4, 2, 6, 4, 2, 8, 4, 2, 6, 2, 4, 6, 2, 8, 4, 2, 4, 6, 2];
-        let currentX = 110;
-        for (let i = 0; i < barWidths.length; i++) {
-            const w = barWidths[i];
-            ctx.fillRect(currentX, 480, w, 70);
-            currentX += w + (i % 3 === 0 ? 6 : 3);
+    // 2. Update Slots Counter
+    const filledCount = APP.giftBox.slots.filter(s => s !== null).length;
+    const counterBadge = document.getElementById("slot-counter-badge");
+    if (counterBadge) {
+        if (filledCount === 3) {
+            counterBadge.className = "px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
+            counterBadge.innerText = "✓ 3 / 3 VAULT COMPLETE";
+        } else {
+            counterBadge.className = "px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-gold-500/20 text-gold-300 border border-gold-500/40";
+            counterBadge.innerText = `${filledCount} / 3 SLOTS FILLED`;
         }
-
-        ctx.font = '600 13px "Space Grotesk", monospace';
-        ctx.fillStyle = '#d4af37';
-        ctx.fillText(`7 93573 00${perfume.id}${size} 2`, 256, 585);
     }
 
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.anisotropy = 8;
-    return texture;
-}
+    // 3. Render 3 Slots
+    for (let slotIdx = 0; slotIdx < 3; slotIdx++) {
+        const slotEl = document.getElementById(`coffret-slot-${slotIdx}`);
+        if (!slotEl) continue;
 
-// Build 3D Flacon Mesh Structure
-function buildStudioFlacon() {
-    if (studioFlaconGroup) {
-        studioScene.remove(studioFlaconGroup);
-    }
+        const perfume = APP.giftBox.slots[slotIdx];
 
-    const perfume = PERFUMES[APP.activeStudioPerfumeIndex];
-    const size = APP.activeStudioSize;
+        if (!perfume) {
+            // EMPTY SLOT
+            slotEl.className = "coffret-slot slot-empty rounded-2xl p-4 flex flex-col items-center justify-between transition-all duration-300 cursor-pointer min-h-[250px] sm:min-h-[280px] relative group border-2 border-dashed border-gold-500/30 hover:border-gold-400 bg-black/40 hover:bg-gold-500/5";
+            slotEl.innerHTML = `
+                <div class="w-full flex items-center justify-between text-[10px] font-mono text-gold-400/70">
+                    <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10 uppercase">SLOT 0${slotIdx + 1}</span>
+                    <span class="text-gray-500">OPEN</span>
+                </div>
+                
+                <div class="my-auto flex flex-col items-center justify-center space-y-2 py-4">
+                    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gold-500/10 border border-gold-500/30 flex items-center justify-center group-hover:scale-110 group-hover:border-gold-400 transition duration-300 shadow-[0_0_20px_rgba(212,175,55,0.15)]">
+                        <i data-lucide="plus" class="w-6 h-6 sm:w-7 sm:h-7 text-gold-400 stroke-[2] animate-pulse"></i>
+                    </div>
+                    <div class="text-center px-2">
+                        <span class="text-xs font-bold text-gray-200 block uppercase font-cinzel">Choose Flacon</span>
+                        <span class="text-[10px] text-gold-400/80 block mt-0.5">Drag bottle here or tap below</span>
+                    </div>
+                </div>
 
-    studioFlaconGroup = new THREE.Group();
-    studioFlaconGroup.position.set(0, 0.05, 0);
+                <div class="w-full py-1 rounded-lg bg-white/5 border border-white/5 text-[9px] font-mono text-center text-gray-400 group-hover:text-gold-300 group-hover:border-gold-500/30 transition">
+                    TAP TO QUICK CHOOSE
+                </div>
+            `;
+        } else {
+            // FILLED SLOT WITH REAL BOTTLE PHOTOGRAPHY
+            slotEl.className = "coffret-slot slot-filled rounded-2xl p-4 flex flex-col items-center justify-between transition-all duration-300 relative group border-2 border-gold-500/50 bg-gradient-to-b from-neutral-900/90 to-black/95 shadow-[0_10px_30px_rgba(0,0,0,0.8)]";
+            slotEl.innerHTML = `
+                <!-- Slot Header & Remove Button -->
+                <div class="w-full flex items-center justify-between text-[10px] font-mono relative z-10">
+                    <span class="px-2 py-0.5 rounded bg-gold-500/20 text-gold-300 border border-gold-500/40 uppercase font-bold">
+                        SLOT 0${slotIdx + 1}
+                    </span>
+                    <button onclick="event.stopPropagation(); removePerfumeFromSlot(${slotIdx})" class="w-6 h-6 rounded-full bg-black/80 hover:bg-red-950 text-gray-400 hover:text-red-400 border border-white/20 hover:border-red-500 flex items-center justify-center transition shadow-lg" title="Remove or Swap this bottle">
+                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
 
-    // 1. Crystal Glass Outer Flacon
-    const outerGlassMat = new THREE.MeshPhysicalMaterial({
-        color: 0xffffff,
-        transparent: true,
-        opacity: 0.28,
-        roughness: 0.02,
-        metalness: 0.05,
-        transmission: 0.90,
-        ior: 1.52,
-        reflectivity: 0.95,
-        clearcoat: 1.0,
-        clearcoatRoughness: 0.02,
-        depthWrite: false
-    });
-    const outerGlass = new THREE.Mesh(new THREE.BoxGeometry(0.96, 1.35, 0.48), outerGlassMat);
-    studioFlaconGroup.add(outerGlass);
+                <!-- Bottle Visual with Velvet Recess Ambient Glow -->
+                <div class="relative my-1 flex items-center justify-center h-36 sm:h-44 w-full">
+                    <div class="absolute inset-0 bg-radial ${perfume.auraGradient} opacity-60 mix-blend-screen pointer-events-none"></div>
+                    <img src="${perfume.image}" alt="${perfume.name}" class="h-full w-auto object-contain filter drop-shadow-[0_12px_25px_rgba(0,0,0,0.95)] transform group-hover:scale-105 transition-transform duration-300" loading="lazy">
+                </div>
 
-    // 2. Solid Crystal Glass Base
-    const baseGlass = new THREE.Mesh(
-        new THREE.BoxGeometry(0.95, 0.25, 0.47),
-        new THREE.MeshPhysicalMaterial({
-            color: 0xffffff,
-            transparent: true,
-            opacity: 0.55,
-            roughness: 0.02,
-            clearcoat: 1.0,
-            depthWrite: false
-        })
-    );
-    baseGlass.position.y = -0.55;
-    studioFlaconGroup.add(baseGlass);
-
-    // 3. Glowing Inner Liquid Core
-    const liquidMat = new THREE.MeshPhysicalMaterial({
-        color: perfume.liquidColor,
-        transparent: true,
-        opacity: 0.92,
-        roughness: 0.06,
-        metalness: 0.15,
-        clearcoat: 1.0,
-        depthWrite: true
-    });
-    studioLiquidMesh = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.96, 0.36), liquidMat);
-    studioLiquidMesh.position.y = 0.08;
-    studioFlaconGroup.add(studioLiquidMesh);
-
-    // 4. White Dip Tube & Pump
-    const tubeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 });
-    const dipTube = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.98, 16), tubeMat);
-    dipTube.position.set(0, 0.06, 0);
-    studioFlaconGroup.add(dipTube);
-
-    const pumpMesh = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.06, 0.06, 0.16, 16),
-        new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.95, roughness: 0.15 })
-    );
-    pumpMesh.position.y = 0.58;
-    studioFlaconGroup.add(pumpMesh);
-
-    // 5. Front 24K Gold Plaque (+Z)
-    const frontTex = generateProceduralPlaque(perfume, size, false);
-    const frontMat = new THREE.MeshStandardMaterial({ map: frontTex, roughness: 0.35, metalness: 0.75 });
-    const goldBezelMat = new THREE.MeshStandardMaterial({ color: 0xf5d061, metalness: 0.98, roughness: 0.15 });
-
-    const frontBezel = new THREE.Mesh(new THREE.BoxGeometry(0.68, 1.00, 0.012), goldBezelMat);
-    frontBezel.position.set(0, 0.06, 0.235);
-    studioFlaconGroup.add(frontBezel);
-
-    studioFrontLabelMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.66, 0.98), frontMat);
-    studioFrontLabelMesh.position.set(0, 0.06, 0.242);
-    studioFlaconGroup.add(studioFrontLabelMesh);
-
-    // 6. Back Collector Certificate Plaque (-Z)
-    const backTex = generateProceduralPlaque(perfume, size, true);
-    const backMat = new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.35, metalness: 0.75 });
-
-    const backBezel = new THREE.Mesh(new THREE.BoxGeometry(0.68, 1.00, 0.012), goldBezelMat);
-    backBezel.position.set(0, 0.06, -0.235);
-    studioFlaconGroup.add(backBezel);
-
-    studioBackLabelMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.66, 0.98), backMat);
-    studioBackLabelMesh.rotation.y = Math.PI;
-    studioBackLabelMesh.position.set(0, 0.06, -0.242);
-    studioFlaconGroup.add(studioBackLabelMesh);
-
-    // 7. Polished Gold Collar
-    const collar = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.22, 0.25, 0.14, 32),
-        new THREE.MeshPhysicalMaterial({ color: 0xf5d061, metalness: 0.98, roughness: 0.10, clearcoat: 1.0 })
-    );
-    collar.position.y = 0.74;
-    studioFlaconGroup.add(collar);
-
-    // 8. Diamond-Knurled 24K Gold Cap
-    const capGroup = new THREE.Group();
-    capGroup.position.set(0, 0.74, 0);
-
-    const capBody = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.24, 0.24, 0.36, 32),
-        new THREE.MeshStandardMaterial({ color: 0xf5d061, metalness: 0.98, roughness: 0.22 })
-    );
-    capBody.position.y = 0.24;
-    capGroup.add(capBody);
-
-    const topCover = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.24, 0.24, 0.015, 32),
-        goldBezelMat
-    );
-    topCover.position.y = 0.42;
-    capGroup.add(topCover);
-
-    studioFlaconGroup.add(capGroup);
-
-    // Apply active volume scale
-    applyFlaconSizeScaling(size, false);
-
-    studioScene.add(studioFlaconGroup);
-}
-
-// Dynamic Morphing & Proportion Scaling for 25ml, 50ml, and 100ml
-function applyFlaconSizeScaling(size, animated = true) {
-    if (!studioFlaconGroup) return;
-
-    if (size === 25) {
-        // Slender, pocket-sized proportions
-        targetFlaconScale.set(0.74, 0.85, 0.74);
-    } else if (size === 50) {
-        // Classic mid-size proportions
-        targetFlaconScale.set(0.88, 0.94, 0.88);
-    } else {
-        // Grand 100ml collector flacon
-        targetFlaconScale.set(1.05, 1.05, 1.05);
-    }
-
-    if (!animated) {
-        currentFlaconScale.copy(targetFlaconScale);
-        studioFlaconGroup.scale.copy(targetFlaconScale);
-    }
-}
-
-// Direct Touch / Pointer Controls for 360° Flacon Rotation
-function setupStudioInput(container) {
-    container.addEventListener("pointerdown", (event) => {
-        isDraggingFlacon = true;
-        lastPointerX = event.clientX;
-        lastPointerY = event.clientY;
-        flaconVelY = 0;
-        flaconVelX = 0;
-        APP.studioAutoSpin = false;
-        updateStudioSpinButtonUI();
-    });
-
-    window.addEventListener("pointermove", (event) => {
-        if (!isDraggingFlacon) return;
-
-        const dx = event.clientX - lastPointerX;
-        const dy = event.clientY - lastPointerY;
-        lastPointerX = event.clientX;
-        lastPointerY = event.clientY;
-
-        // Direct 1:1 spin
-        flaconRotY += dx * 0.009;
-        flaconRotX += dy * 0.005;
-        flaconRotX = THREE.MathUtils.clamp(flaconRotX, -0.30, 0.38);
-
-        flaconVelY = dx * 0.009;
-        flaconVelX = dy * 0.005;
-    });
-
-    window.addEventListener("pointerup", () => {
-        if (isDraggingFlacon) {
-            isDraggingFlacon = false;
+                <!-- 24K Gold Embossed Plaque Nameplate -->
+                <div class="w-full pt-2 border-t border-gold-500/30 text-center relative z-10">
+                    <h4 class="font-cinzel text-xs sm:text-sm font-black text-white uppercase tracking-wider truncate">
+                        ${perfume.name}
+                    </h4>
+                    <div class="flex items-center justify-center space-x-1.5 mt-0.5">
+                        <span class="text-[9px] font-mono text-gold-400 font-bold">${size} ML EXTRAIT</span>
+                        <span class="text-gray-500">•</span>
+                        <span class="text-[9px] text-emerald-400 font-bold">35% PURE</span>
+                    </div>
+                </div>
+            `;
         }
-    });
+    }
+
+    // 4. Update Box Stage Exterior Finish
+    const boxStage = document.getElementById("gift-box-stage");
+    if (boxStage) {
+        boxStage.className = `relative rounded-3xl p-5 sm:p-7 shadow-[0_20px_70px_rgba(0,0,0,0.95)] transition-all duration-500 border-2 box-theme-${APP.giftBox.boxFinish}`;
+    }
+
+    // 5. Update Silk Ribbon Band Overlay
+    const ribbonBand = document.getElementById("box-ribbon-band");
+    if (ribbonBand) {
+        ribbonBand.className = `ribbon-band ribbon-${APP.giftBox.ribbon} pointer-events-none`;
+    }
+
+    // 6. Update Packaging Label
+    const packagingLabel = document.getElementById("gift-box-packaging-label");
+    if (packagingLabel) {
+        const finishName = APP.giftBox.boxFinish === 'obsidian' ? 'OBSIDIAN NOIR' : (APP.giftBox.boxFinish === 'emerald' ? 'EMERALD GOLD' : 'DIAMOND PEARL');
+        const ribbonName = APP.giftBox.ribbon === 'gold' ? '24K GOLD SILK' : (APP.giftBox.ribbon === 'noir' ? 'MIDNIGHT SATIN' : 'ROYAL RUBY');
+        packagingLabel.innerText = `WRAP: ${finishName} + ${ribbonName}`;
+    }
+
+    // 7. Update Pricing and Savings
+    const totalEl = document.getElementById("box-total-price");
+    if (totalEl) totalEl.innerText = `₹${pricing.price.toLocaleString('en-IN')}`;
+
+    const regEl = document.getElementById("box-regular-price");
+    if (regEl) regEl.innerText = `₹${pricing.regular.toLocaleString('en-IN')}`;
+
+    const savingsBadge = document.getElementById("box-savings-badge");
+    if (savingsBadge) savingsBadge.innerText = `SAVE ₹${pricing.savings.toLocaleString('en-IN')}`;
+
+    const btnPriceTag = document.getElementById("btn-gift-price-tag");
+    if (btnPriceTag) btnPriceTag.innerText = `• ₹${pricing.price.toLocaleString('en-IN')}`;
+
+    // 8. Refresh Lucide Icons
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-function animateStudio() {
-    requestAnimationFrame(animateStudio);
+function renderScentPaletteTray() {
+    const tray = document.getElementById("scent-palette-tray");
+    if (!tray) return;
 
-    if (studioFlaconGroup) {
-        // Inertia Momentum Physics or Auto-Spin
-        if (APP.studioAutoSpin && !isDraggingFlacon) {
-            flaconRotY += 0.008;
-            flaconRotX = THREE.MathUtils.lerp(flaconRotX, 0, 0.04);
-        } else if (!isDraggingFlacon) {
-            // Apply friction damping
-            flaconVelY *= 0.92;
-            flaconVelX *= 0.92;
-            flaconRotY += flaconVelY;
-            flaconRotX += flaconVelX;
-            flaconRotX = THREE.MathUtils.clamp(flaconRotX, -0.30, 0.38);
+    tray.innerHTML = PERFUMES.map((perfume, idx) => {
+        const timesInBox = APP.giftBox.slots.filter(s => s && s.id === perfume.id).length;
 
-            if (Math.abs(flaconVelX) < 0.001) {
-                flaconRotX = THREE.MathUtils.lerp(flaconRotX, 0, 0.03);
+        return `
+            <div class="scent-palette-card glass-panel rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-between text-center border border-white/10 hover:border-gold-400 transition cursor-grab active:cursor-grabbing group relative select-none"
+                 draggable="true"
+                 ondragstart="handleDragStart(event, ${idx})"
+                 onclick="handlePalettePerfumeClick(${idx})"
+                 ontouchstart="handleTouchStart(event, ${idx})"
+                 ontouchmove="handleTouchMove(event)"
+                 ontouchend="handleTouchEnd(event, ${idx})">
+                
+                <!-- In-Box Badge -->
+                ${timesInBox > 0 ? `
+                    <span class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[8px] font-mono font-bold bg-gold-500 text-black">
+                        ✓ In Box
+                    </span>
+                ` : ''}
+
+                <!-- Bottle Thumbnail -->
+                <div class="h-20 sm:h-24 w-full flex items-center justify-center py-1">
+                    <img src="${perfume.image}" alt="${perfume.name}" class="h-full w-auto object-contain filter drop-shadow group-hover:scale-110 transition duration-300 pointer-events-none">
+                </div>
+
+                <!-- Perfume Info -->
+                <div class="w-full mt-1">
+                    <span class="font-cinzel text-[11px] sm:text-xs font-black text-white uppercase block truncate">${perfume.name}</span>
+                    <span class="text-[9px] text-gold-400 font-mono block truncate">${perfume.tagline.split('&')[0]}</span>
+                </div>
+
+                <!-- Add Button / Drag Hint -->
+                <button type="button" class="w-full mt-2 py-1 px-1.5 rounded-lg bg-gold-500/15 hover:bg-gold-500 hover:text-black border border-gold-500/30 text-[9px] font-bold text-gold-300 uppercase transition pointer-events-auto">
+                    + Place in Box
+                </button>
+            </div>
+        `;
+    }).join("");
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// Drag & Drop Handlers
+function handleDragStart(e, perfumeIndex) {
+    draggedPerfumeIndex = perfumeIndex;
+    if (e.dataTransfer) {
+        e.dataTransfer.setData("text/plain", perfumeIndex.toString());
+        e.dataTransfer.effectAllowed = "copyMove";
+    }
+    playSfx('click');
+}
+
+function handleSlotDragOver(e, slotIndex) {
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+    const slotEl = document.getElementById(`coffret-slot-${slotIndex}`);
+    if (slotEl) {
+        slotEl.classList.add("slot-drag-over");
+    }
+}
+
+function handleSlotDragLeave(e, slotIndex) {
+    const slotEl = document.getElementById(`coffret-slot-${slotIndex}`);
+    if (slotEl) {
+        slotEl.classList.remove("slot-drag-over");
+    }
+}
+
+function handleSlotDrop(e, slotIndex) {
+    e.preventDefault();
+    const slotEl = document.getElementById(`coffret-slot-${slotIndex}`);
+    if (slotEl) {
+        slotEl.classList.remove("slot-drag-over");
+    }
+
+    let perfIdx = draggedPerfumeIndex;
+    if (e.dataTransfer) {
+        const data = e.dataTransfer.getData("text/plain");
+        if (data !== "") perfIdx = parseInt(data);
+    }
+
+    if (perfIdx !== null && PERFUMES[perfIdx]) {
+        assignPerfumeToSlot(perfIdx, slotIndex);
+    }
+    draggedPerfumeIndex = null;
+}
+
+// Mobile Touch Drag Helpers
+function handleTouchStart(e, perfumeIndex) {
+    activeTouchPerfumeIndex = perfumeIndex;
+}
+
+function handleTouchMove(e) {
+    if (activeTouchPerfumeIndex === null) return;
+    const touch = e.touches[0];
+    const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+    
+    // Highlight slot if dragged over
+    [0, 1, 2].forEach(idx => {
+        const slot = document.getElementById(`coffret-slot-${idx}`);
+        if (slot) {
+            if (slot.contains(targetEl) || slot === targetEl) {
+                slot.classList.add("slot-drag-over");
+            } else {
+                slot.classList.remove("slot-drag-over");
             }
         }
+    });
+}
 
-        studioFlaconGroup.rotation.y = flaconRotY;
-        studioFlaconGroup.rotation.x = flaconRotX;
+function handleTouchEnd(e, perfumeIndex) {
+    if (activeTouchPerfumeIndex === null) return;
+    const changedTouch = e.changedTouches[0];
+    const targetEl = document.elementFromPoint(changedTouch.clientX, changedTouch.clientY);
 
-        // Smooth Size Morphing Lerp
-        currentFlaconScale.lerp(targetFlaconScale, 0.12);
-        studioFlaconGroup.scale.copy(currentFlaconScale);
+    [0, 1, 2].forEach(idx => {
+        const slot = document.getElementById(`coffret-slot-${idx}`);
+        if (slot) {
+            slot.classList.remove("slot-drag-over");
+            if (slot.contains(targetEl) || slot === targetEl) {
+                assignPerfumeToSlot(perfumeIndex, idx);
+            }
+        }
+    });
+
+    activeTouchPerfumeIndex = null;
+}
+
+// 1-Tap Quick Action (Instant Touch Friendly)
+function handlePalettePerfumeClick(perfumeIndex) {
+    // Find first empty slot
+    let targetSlot = APP.giftBox.slots.findIndex(s => s === null);
+    if (targetSlot === -1) {
+        targetSlot = 0;
     }
+    assignPerfumeToSlot(perfumeIndex, targetSlot);
+}
 
-    if (studioRenderer && studioScene && studioCamera) {
-        studioRenderer.render(studioScene, studioCamera);
+function handleSlotTap(slotIndex) {
+    if (APP.giftBox.slots[slotIndex] === null) {
+        // Find a perfume not already in the box, or cycle
+        const available = PERFUMES.find(p => !APP.giftBox.slots.some(s => s && s.id === p.id)) || PERFUMES[0];
+        const pIdx = PERFUMES.findIndex(p => p.id === available.id);
+        assignPerfumeToSlot(pIdx, slotIndex);
     }
 }
 
-// Toggle Auto 360 Spin
-function toggleStudioSpin() {
-    APP.studioAutoSpin = !APP.studioAutoSpin;
+function assignPerfumeToSlot(perfumeIndex, slotIndex) {
+    const perfume = PERFUMES[perfumeIndex];
+    if (!perfume) return;
+
+    APP.giftBox.slots[slotIndex] = perfume;
+    playSfx('add-to-bag');
+    renderGiftBox();
+    renderScentPaletteTray();
+    showToast(`Placed ${perfume.name} into Slot ${slotIndex + 1}`, "sparkles");
+}
+
+function removePerfumeFromSlot(slotIndex) {
     playSfx('click');
-    updateStudioSpinButtonUI();
-    showToast(APP.studioAutoSpin ? "Auto 360° Spin On" : "Auto Spin Paused", "rotate-cw");
-}
-
-function updateStudioSpinButtonUI() {
-    const btn = document.getElementById("studio-spin-btn");
-    const label = document.getElementById("studio-spin-text");
-    if (!btn || !label) return;
-
-    if (APP.studioAutoSpin) {
-        btn.classList.add("border-gold-400", "bg-gold-500/20", "text-white");
-        label.innerText = "Auto Spin: ON";
-    } else {
-        btn.classList.remove("border-gold-400", "bg-gold-500/20", "text-white");
-        label.innerText = "Auto Spin";
+    const removed = APP.giftBox.slots[slotIndex];
+    APP.giftBox.slots[slotIndex] = null;
+    renderGiftBox();
+    renderScentPaletteTray();
+    if (removed) {
+        showToast(`Removed ${removed.name} from Slot ${slotIndex + 1}`, "trash-2");
     }
 }
 
-function resetStudioView() {
+function clearGiftBoxSlots() {
     playSfx('click');
-    flaconRotY = 0;
-    flaconRotX = 0;
-    flaconVelY = 0;
-    flaconVelX = 0;
-    APP.studioAutoSpin = true;
-    updateStudioSpinButtonUI();
+    APP.giftBox.slots = [null, null, null];
+    renderGiftBox();
+    renderScentPaletteTray();
+    showToast("Cleared all 3 slots in Gift Box", "rotate-ccw");
 }
 
-// Switch Fragrance in 3D Studio
-function switchStudioScent(index) {
-    APP.activeStudioPerfumeIndex = index;
-    playSfx('click');
+// External Add to Gift Box (from Collection Cards or Quiz)
+function addPerfumeToGiftBox(perfumeId) {
+    const perfume = PERFUMES.find(p => p.id === perfumeId);
+    if (!perfume) return;
+    const pIdx = PERFUMES.findIndex(p => p.id === perfumeId);
 
-    const perfume = PERFUMES[index];
-    const size = APP.activeStudioSize;
+    // Find next empty slot
+    let slotIdx = APP.giftBox.slots.findIndex(s => s === null);
+    if (slotIdx === -1) slotIdx = 2; // replace last slot if all full
 
-    // Update 3D Stage Flacon Plaque & Liquid Color
-    buildStudioFlacon();
+    assignPerfumeToSlot(pIdx, slotIdx);
 
-    // Update Underlight Color
-    if (studioUnderlight) {
-        studioUnderlight.color.setHex(perfume.liquidColor);
-    }
-
-    // Update Studio UI Texts
-    document.getElementById("studio-title").innerText = perfume.name;
-    document.getElementById("studio-tagline").innerText = `"${perfume.subtitle}"`;
-    document.getElementById("studio-badge").innerText = perfume.badge;
-    document.getElementById("studio-notes-preview").innerText = `${perfume.notes.top}, ${perfume.notes.heart}, ${perfume.notes.base}.`;
-    
-    // Select dropdown sync
-    const selectEl = document.getElementById("studio-scent-select");
-    if (selectEl) selectEl.value = index;
-
-    // Update prices
-    updateStudioPriceDisplay();
-
-    // Update Aura Gradient
-    const aura = document.getElementById("studio-aura-light");
-    if (aura) {
-        aura.className = `absolute inset-0 pointer-events-none opacity-40 mix-blend-screen transition-all duration-700 bg-radial ${perfume.auraGradient}`;
+    // Smooth scroll up to Gift Box section
+    const giftBoxSection = document.getElementById("giftbox-section");
+    if (giftBoxSection) {
+        giftBoxSection.scrollIntoView({ behavior: 'smooth' });
     }
 }
 
-// Switch Flacon Size (25ml / 50ml / 100ml) in 3D Studio
-function selectStudioSize(size) {
-    APP.activeStudioSize = size;
+function addQuizResultToGiftBox() {
+    addPerfumeToGiftBox(PERFUMES[quizMatchPerfumeIndex].id);
+}
+
+// Customizer Controls
+function selectGiftBoxSize(size) {
+    APP.giftBox.size = size;
     playSfx('size-switch');
 
-    // Update 3D Morphing Scale & Plaque Text
-    applyFlaconSizeScaling(size, true);
-    buildStudioFlacon(); // Re-renders plaque texture with "25 ML" / "50 ML" / "100 ML"
-
-    // Update size pills UI
     [25, 50, 100].forEach(s => {
-        const btn = document.getElementById(`studio-size-btn-${s}`);
+        const btn = document.getElementById(`box-size-btn-${s}`);
         if (btn) {
             if (s === size) btn.classList.add("active");
             else btn.classList.remove("active");
         }
     });
 
-    const perfume = PERFUMES[APP.activeStudioPerfumeIndex];
-    document.getElementById("studio-selected-size-desc").innerText = perfume.sizes[size].title;
-    document.getElementById("studio-flacon-size-badge").innerText = `${size} ML ${perfume.sizes[size].title.toUpperCase()}`;
-
-    updateStudioPriceDisplay();
-    showToast(`Selected ${size} ML ${perfume.sizes[size].title}`, "check");
+    renderGiftBox();
+    showToast(`Selected ${size} ML Coffret Set`, "check");
 }
 
-function adjustStudioQty(delta) {
-    APP.studioQty = Math.max(1, Math.min(10, APP.studioQty + delta));
+function selectBoxFinish(finish) {
+    APP.giftBox.boxFinish = finish;
     playSfx('click');
-    document.getElementById("studio-qty-display").innerText = APP.studioQty;
-    updateStudioPriceDisplay();
-}
 
-function updateStudioPriceDisplay() {
-    const perfume = PERFUMES[APP.activeStudioPerfumeIndex];
-    const unitPrice = perfume.prices[APP.activeStudioSize];
-    const total = unitPrice * APP.studioQty;
-
-    document.getElementById("studio-total-price").innerText = `₹${total.toLocaleString('en-IN')}`;
-    document.getElementById("studio-btn-price-tag").innerText = `• ₹${total.toLocaleString('en-IN')}`;
-
-    // Update individual size pill price tags
-    [25, 50, 100].forEach(s => {
-        const el = document.getElementById(`studio-size-price-${s}`);
-        if (el) el.innerText = `₹${perfume.prices[s].toLocaleString('en-IN')}`;
+    ['obsidian', 'emerald', 'alabaster'].forEach(f => {
+        const btn = document.getElementById(`box-finish-${f}`);
+        if (btn) {
+            if (f === finish) btn.classList.add("active");
+            else btn.classList.remove("active");
+        }
     });
+
+    renderGiftBox();
 }
 
-// Add Currently Configured Flacon to Bag
-function addStudioFlaconToCart() {
-    const perfume = PERFUMES[APP.activeStudioPerfumeIndex];
-    addToCart(perfume.id, APP.activeStudioSize, APP.studioQty);
+function selectRibbonStyle(ribbon) {
+    APP.giftBox.ribbon = ribbon;
+    playSfx('click');
+
+    ['gold', 'noir', 'ruby'].forEach(r => {
+        const btn = document.getElementById(`ribbon-style-${r}`);
+        if (btn) {
+            if (r === ribbon) btn.classList.add("active");
+            else btn.classList.remove("active");
+        }
+    });
+
+    renderGiftBox();
+}
+
+function updateGiftCardPreview() {
+    const recInput = document.getElementById("gift-card-recipient");
+    const sndInput = document.getElementById("gift-card-sender");
+    const msgInput = document.getElementById("gift-card-message");
+
+    const recVal = recInput && recInput.value.trim() ? recInput.value.trim() : "To: Someone Extraordinary";
+    const sndVal = sndInput && sndInput.value.trim() ? `- ${sndInput.value.trim()}` : "- With Love";
+    const msgVal = msgInput && msgInput.value.trim() ? `"${msgInput.value.trim()}"` : '"May your aura command every room you enter."';
+
+    const prevRec = document.getElementById("preview-recipient");
+    if (prevRec) prevRec.innerText = recVal.startsWith("To:") ? recVal : `To: ${recVal}`;
+
+    const prevMsg = document.getElementById("preview-message");
+    if (prevMsg) prevMsg.innerText = msgVal;
+
+    const prevSnd = document.getElementById("preview-sender");
+    if (prevSnd) prevSnd.innerText = sndVal;
+}
+
+// Add Gift Box to Bag
+function addGiftBoxToCart() {
+    // Check if slots are filled
+    const emptySlotCount = APP.giftBox.slots.filter(s => s === null).length;
+    if (emptySlotCount > 0) {
+        // Auto-fill empty slots with bestselling extraits
+        PERFUMES.forEach(p => {
+            if (APP.giftBox.slots.includes(null)) {
+                const emptyIdx = APP.giftBox.slots.indexOf(null);
+                APP.giftBox.slots[emptyIdx] = p;
+            }
+        });
+        renderGiftBox();
+        renderScentPaletteTray();
+        showToast("Auto-filled remaining slots with bestsellers!", "sparkles");
+    }
+
+    const size = APP.giftBox.size;
+    const pricing = GIFT_BOX_PRICING[size];
+    const recName = document.getElementById("gift-card-recipient")?.value.trim() || '';
+    const sndName = document.getElementById("gift-card-sender")?.value.trim() || '';
+    const msgText = document.getElementById("gift-card-message")?.value.trim() || '';
+
+    const giftBoxItem = {
+        id: `giftbox-${Date.now()}`,
+        isGiftBox: true,
+        name: `Bespoke 3-Flacon Discovery Coffret`,
+        subtitle: `Curated trio: ${APP.giftBox.slots.map(s => s.name).join(', ')}`,
+        perfumes: APP.giftBox.slots.map(s => s.name),
+        perfumeImages: APP.giftBox.slots.map(s => s.image),
+        size: size,
+        sizeLabel: `3 × ${size}ML`,
+        boxFinish: APP.giftBox.boxFinish,
+        ribbon: APP.giftBox.ribbon,
+        giftNote: {
+            recipient: recName,
+            sender: sndName,
+            message: msgText
+        },
+        price: pricing.price,
+        qty: 1,
+        image: APP.giftBox.slots[0].image
+    };
+
+    APP.cart.push(giftBoxItem);
+    saveCartToStorage();
     playSfx('add-to-bag');
+    renderCartUI();
     openCartDrawer();
+    showToast("Added Bespoke Gift Vault to Bag!", "gift");
 }
 
-function quickOrderStudioWhatsApp() {
-    const perfume = PERFUMES[APP.activeStudioPerfumeIndex];
-    const size = APP.activeStudioSize;
-    const unitPrice = perfume.prices[size];
-    const total = unitPrice * APP.studioQty;
+function quickOrderGiftBoxWhatsApp() {
+    // Ensure slots are filled
+    if (APP.giftBox.slots.includes(null)) {
+        PERFUMES.forEach(p => {
+            if (APP.giftBox.slots.includes(null)) {
+                const emptyIdx = APP.giftBox.slots.indexOf(null);
+                APP.giftBox.slots[emptyIdx] = p;
+            }
+        });
+        renderGiftBox();
+        renderScentPaletteTray();
+    }
 
-    const message = `*NEW ORDER - PERFUME KOMPANY*\n` +
+    const size = APP.giftBox.size;
+    const pricing = GIFT_BOX_PRICING[size];
+    const finishName = APP.giftBox.boxFinish === 'obsidian' ? 'Obsidian Noir' : (APP.giftBox.boxFinish === 'emerald' ? 'Emerald Gold' : 'Diamond Pearl');
+    const ribbonName = APP.giftBox.ribbon === 'gold' ? '24K Liquid Gold Silk' : (APP.giftBox.ribbon === 'noir' ? 'Midnight Satin' : 'Royal Ruby');
+    const recName = document.getElementById("gift-card-recipient")?.value.trim() || 'Someone Extraordinary';
+    const msgText = document.getElementById("gift-card-message")?.value.trim() || 'May your aura command every room.';
+
+    let message = `*NEW ORDER - PERFUME KOMPANY BESPOKE GIFT VAULT*\n` +
         `----------------------------------------\n` +
-        `✦ Item: ${perfume.name} (35% Pure Extrait)\n` +
-        `✦ Volume: ${size} ML (${perfume.sizes[size].title})\n` +
-        `✦ Quantity: ${APP.studioQty}\n` +
-        `✦ Total Price: ₹${total.toLocaleString('en-IN')}\n` +
+        `✦ Item: Bespoke 3-Flacon Discovery Coffret\n` +
+        `✦ Volume: 3 × ${size} ML (${pricing.label})\n` +
+        `✦ Selected Extraits (35% Pure Oil):\n` +
+        `   1. ${APP.giftBox.slots[0].name}\n` +
+        `   2. ${APP.giftBox.slots[1].name}\n` +
+        `   3. ${APP.giftBox.slots[2].name}\n` +
+        `✦ Packaging Finish: ${finishName} Box\n` +
+        `✦ Silk Ribbon Wrap: ${ribbonName}\n` +
+        `✦ Engraved Card: To "${recName}" - "${msgText}"\n` +
+        `✦ Bundle Price: *₹${pricing.price.toLocaleString('en-IN')}* (Saved ₹${pricing.savings})\n` +
         `✦ Delivery: Free Express VIP Courier\n` +
         `----------------------------------------\n` +
-        `Please confirm my order and share payment link / delivery details. Thank you!`;
+        `Please confirm my custom gift vault order and share payment link / delivery details. Thank you!`;
 
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
 }
@@ -918,9 +819,9 @@ function renderCollectionGrid(filter = 'all') {
                         35% EXTRAIT
                     </span>
 
-                    <button onclick="inspectInStudio(${originalIndex})" class="absolute bottom-3 right-3 glass-panel hover:bg-gold-500 hover:text-black text-gold-300 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center space-x-1 transition shadow-lg" title="Inspect Flacon in 3D">
-                        <i data-lucide="box" class="w-3.5 h-3.5"></i>
-                        <span>3D View</span>
+                    <button onclick="addPerfumeToGiftBox(${perfume.id})" class="absolute bottom-3 right-3 glass-panel hover:bg-gold-500 hover:text-black text-gold-300 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center space-x-1.5 transition shadow-lg" title="Add this flacon to your 3-perfume Gift Box">
+                        <i data-lucide="gift" class="w-3.5 h-3.5 text-gold-400"></i>
+                        <span>+ Gift Box</span>
                     </button>
                 </div>
 
@@ -1005,12 +906,7 @@ function filterCollection(filter) {
 }
 
 function inspectInStudio(perfumeIndex) {
-    playSfx('click');
-    switchStudioScent(perfumeIndex);
-    const studioSection = document.getElementById("studio-section");
-    if (studioSection) {
-        studioSection.scrollIntoView({ behavior: 'smooth' });
-    }
+    addPerfumeToGiftBox(PERFUMES[perfumeIndex].id);
 }
 
 // ==========================================
@@ -1191,36 +1087,78 @@ function renderCartUI() {
                 <div class="text-center py-16 space-y-3">
                     <i data-lucide="shopping-bag" class="w-12 h-12 text-gold-500/40 mx-auto"></i>
                     <p class="font-cinzel text-base text-gray-300 uppercase">Your Bag is Empty</p>
-                    <p class="text-xs text-gray-500 max-w-xs mx-auto">Explore our 5 signature extraits and acquire your fragrance in 25ml, 50ml, or 100ml.</p>
+                    <p class="text-xs text-gray-500 max-w-xs mx-auto">Explore our 5 signature extraits or curate your bespoke 3-perfume gift coffret.</p>
                 </div>
             `;
         } else {
-            container.innerHTML = APP.cart.map((item, idx) => `
-                <div class="flex items-center space-x-3.5 pt-3.5 first:pt-0">
-                    <img src="${item.image}" alt="${item.name}" class="w-16 h-20 object-contain rounded-xl bg-black border border-white/10 p-1 flex-shrink-0">
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-start justify-between gap-1">
-                            <div>
-                                <h4 class="font-cinzel text-xs sm:text-sm font-bold text-white uppercase truncate">${item.name}</h4>
-                                <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-gold-500/20 text-gold-300 border border-gold-500/30 uppercase mt-0.5 inline-block">
-                                    ${item.size} ML ${item.sizeLabel}
-                                </span>
+            container.innerHTML = APP.cart.map((item, idx) => {
+                if (item.isGiftBox) {
+                    return `
+                        <div class="flex items-start space-x-3.5 pt-3.5 first:pt-0">
+                            <!-- 3 Mini Flacons in Vault Graphic -->
+                            <div class="w-16 h-20 rounded-xl bg-gradient-to-b from-stone-900 to-black border border-gold-500/40 p-1 flex items-center justify-center flex-shrink-0 relative overflow-hidden shadow-lg">
+                                <div class="flex items-center -space-x-3 scale-95">
+                                    ${item.perfumeImages.map(img => `<img src="${img}" class="w-6 h-12 object-contain filter drop-shadow">`).join('')}
+                                </div>
+                                <span class="absolute bottom-0 inset-x-0 bg-gold-500 text-black text-[7px] font-black text-center font-mono uppercase">VAULT</span>
                             </div>
-                            <button onclick="removeCartItem(${idx})" class="text-gray-500 hover:text-red-400 transition p-1" title="Remove">
-                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                            </button>
+                            
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-start justify-between gap-1">
+                                    <div>
+                                        <h4 class="font-cinzel text-xs sm:text-sm font-bold text-white uppercase truncate">${item.name}</h4>
+                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-gold-500/20 text-gold-300 border border-gold-500/30 uppercase mt-0.5 inline-block">
+                                            ${item.sizeLabel} • ${item.boxFinish.toUpperCase()} BOX
+                                        </span>
+                                        <p class="text-[10px] text-gray-300 mt-1 line-clamp-1 font-mono">
+                                            ✦ ${item.perfumes.join(' • ')}
+                                        </p>
+                                        ${item.giftNote && item.giftNote.message ? `<p class="text-[9px] text-gold-400 italic mt-0.5 font-serif-editorial">"Note: ${item.giftNote.message}"</p>` : ''}
+                                    </div>
+                                    <button onclick="removeCartItem(${idx})" class="text-gray-500 hover:text-red-400 transition p-1" title="Remove">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                                <div class="flex items-center justify-between mt-2">
+                                    <span class="font-mono text-xs font-bold text-gold-400">₹${(item.price * item.qty).toLocaleString('en-IN')}</span>
+                                    <div class="flex items-center space-x-1.5 bg-black/60 border border-white/10 rounded-lg p-0.5">
+                                        <button onclick="updateCartQty(${idx}, -1)" class="w-5 h-5 flex items-center justify-center text-xs text-gray-300 hover:text-white">-</button>
+                                        <span class="font-mono text-[11px] w-4 text-center font-bold text-white">${item.qty}</span>
+                                        <button onclick="updateCartQty(${idx}, 1)" class="w-5 h-5 flex items-center justify-center text-xs text-gray-300 hover:text-white">+</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex items-center justify-between mt-2">
-                            <span class="font-mono text-xs font-bold text-gold-400">₹${(item.price * item.qty).toLocaleString('en-IN')}</span>
-                            <div class="flex items-center space-x-1.5 bg-black/60 border border-white/10 rounded-lg p-0.5">
-                                <button onclick="updateCartQty(${idx}, -1)" class="w-5 h-5 flex items-center justify-center text-xs text-gray-300 hover:text-white">-</button>
-                                <span class="font-mono text-[11px] w-4 text-center font-bold text-white">${item.qty}</span>
-                                <button onclick="updateCartQty(${idx}, 1)" class="w-5 h-5 flex items-center justify-center text-xs text-gray-300 hover:text-white">+</button>
+                    `;
+                }
+
+                return `
+                    <div class="flex items-center space-x-3.5 pt-3.5 first:pt-0">
+                        <img src="${item.image}" alt="${item.name}" class="w-16 h-20 object-contain rounded-xl bg-black border border-white/10 p-1 flex-shrink-0">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-start justify-between gap-1">
+                                <div>
+                                    <h4 class="font-cinzel text-xs sm:text-sm font-bold text-white uppercase truncate">${item.name}</h4>
+                                    <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-gold-500/20 text-gold-300 border border-gold-500/30 uppercase mt-0.5 inline-block">
+                                        ${item.size} ML ${item.sizeLabel}
+                                    </span>
+                                </div>
+                                <button onclick="removeCartItem(${idx})" class="text-gray-500 hover:text-red-400 transition p-1" title="Remove">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                            <div class="flex items-center justify-between mt-2">
+                                <span class="font-mono text-xs font-bold text-gold-400">₹${(item.price * item.qty).toLocaleString('en-IN')}</span>
+                                <div class="flex items-center space-x-1.5 bg-black/60 border border-white/10 rounded-lg p-0.5">
+                                    <button onclick="updateCartQty(${idx}, -1)" class="w-5 h-5 flex items-center justify-center text-xs text-gray-300 hover:text-white">-</button>
+                                    <span class="font-mono text-[11px] w-4 text-center font-bold text-white">${item.qty}</span>
+                                    <button onclick="updateCartQty(${idx}, 1)" class="w-5 h-5 flex items-center justify-center text-xs text-gray-300 hover:text-white">+</button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            `).join("");
+                `;
+            }).join("");
         }
     }
 
@@ -1341,7 +1279,7 @@ function closeSuccessModal() {
 // 1-Click WhatsApp Order Dispatch
 function orderViaWhatsApp() {
     if (APP.cart.length === 0) {
-        showToast("Your bag is empty! Add a flacon first.", "alert-circle");
+        showToast("Your bag is empty! Add a flacon or gift vault first.", "alert-circle");
         return;
     }
 
@@ -1352,8 +1290,18 @@ function orderViaWhatsApp() {
     let message = `*NEW ORDER - PERFUME KOMPANY OFFICIAL*\n`;
     message += `----------------------------------------\n`;
     APP.cart.forEach((item, i) => {
-        message += `${i + 1}. *${item.name}* (${item.size}ML ${item.sizeLabel})\n`;
-        message += `   Qty: ${item.qty} × ₹${item.price} = ₹${(item.qty * item.price).toLocaleString('en-IN')}\n`;
+        if (item.isGiftBox) {
+            message += `${i + 1}. *${item.name}* (${item.sizeLabel})\n`;
+            message += `   Flacons: ${item.perfumes.join(', ')}\n`;
+            message += `   Packaging: ${item.boxFinish} Vault with ${item.ribbon} Ribbon\n`;
+            if (item.giftNote && (item.giftNote.recipient || item.giftNote.message)) {
+                message += `   Gift Note: To "${item.giftNote.recipient}" - "${item.giftNote.message}" (From: ${item.giftNote.sender})\n`;
+            }
+            message += `   Qty: ${item.qty} × ₹${item.price} = ₹${(item.qty * item.price).toLocaleString('en-IN')}\n`;
+        } else {
+            message += `${i + 1}. *${item.name}* (${item.size}ML ${item.sizeLabel})\n`;
+            message += `   Qty: ${item.qty} × ₹${item.price} = ₹${(item.qty * item.price).toLocaleString('en-IN')}\n`;
+        }
     });
     message += `----------------------------------------\n`;
     message += `✦ Total Amount: *₹${grandTotal.toLocaleString('en-IN')}*\n`;
@@ -1376,7 +1324,11 @@ function sendOrderReceiptWhatsApp() {
     message += `Payment Method: ${order.paymentMethod}\n`;
     message += `----------------------------------------\n`;
     order.items.forEach(item => {
-        message += `• ${item.name} (${item.size}ML) × ${item.qty} = ₹${(item.price * item.qty).toLocaleString('en-IN')}\n`;
+        if (item.isGiftBox) {
+            message += `• ${item.name} (${item.sizeLabel}) [${item.perfumes.join(', ')}] × ${item.qty} = ₹${(item.price * item.qty).toLocaleString('en-IN')}\n`;
+        } else {
+            message += `• ${item.name} (${item.size}ML) × ${item.qty} = ₹${(item.price * item.qty).toLocaleString('en-IN')}\n`;
+        }
     });
     message += `----------------------------------------\n`;
     message += `Grand Total: *₹${order.grandTotal.toLocaleString('en-IN')}*\n`;
@@ -1420,7 +1372,7 @@ function showToast(message, icon = "check") {
 // ==========================================
 window.addEventListener("DOMContentLoaded", () => {
     loadCartFromStorage();
-    init3DStudio();
+    initGiftBoxStudio();
     renderCollectionGrid('all');
     renderPyramidPills();
     switchPyramidScent(0);
