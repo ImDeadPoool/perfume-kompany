@@ -277,10 +277,14 @@ function toggleSound() {
 // BESPOKE 3-FLACON LUXURY GIFT VAULT STUDIO
 // ==========================================
 
+// ==========================================
+// BESPOKE 3-FLACON LUXURY GIFT VAULT STUDIO
+// ==========================================
+
 const GIFT_BOX_PRICING = {
-    25: { price: 1499, regular: 1747, savings: 248, label: "3 × 25 ML Pocket Trio" },
-    50: { price: 2299, regular: 2597, savings: 298, label: "3 × 50 ML Signature Set" },
-    100: { price: 3199, regular: 3597, savings: 398, label: "3 × 100 ML Grand Imperial Set" }
+    25: { price: 1499, label: "3 × 25 ML Pocket Trio" },
+    50: { price: 2299, label: "3 × 50 ML Signature Set" },
+    100: { price: 3199, label: "3 × 100 ML Grand Imperial Set" }
 };
 
 let draggedPerfumeIndex = null;
@@ -296,9 +300,64 @@ function getGiftBoxPrice(size) {
     return GIFT_BOX_PRICING[size] ? GIFT_BOX_PRICING[size].price : 1499;
 }
 
+// Dynamically compute exact mathematical totals from the actual flacons in slots
+function calculateGiftBoxTotals() {
+    const size = APP.giftBox.size;
+    const tierPrice = GIFT_BOX_PRICING[size] ? GIFT_BOX_PRICING[size].price : 1499;
+    
+    let filledCount = 0;
+    let actualSum = 0;
+    const parts = [];
+
+    APP.giftBox.slots.forEach(p => {
+        if (p) {
+            filledCount++;
+            const price = p.prices[size];
+            actualSum += price;
+            parts.push(`₹${price}`);
+        }
+    });
+
+    let displayTotal = tierPrice;
+    let regularSum = actualSum;
+    let savings = 0;
+    let formulaText = "";
+
+    if (filledCount === 3) {
+        regularSum = actualSum;
+        displayTotal = tierPrice;
+        savings = Math.max(0, regularSum - displayTotal);
+        formulaText = `3 Flacons: ${parts.join(' + ')} = ₹${regularSum.toLocaleString('en-IN')}`;
+    } else if (filledCount > 0) {
+        regularSum = actualSum;
+        displayTotal = actualSum;
+        savings = 0;
+        formulaText = `${filledCount} of 3 Selected (${parts.join(' + ')}) • Add ${3 - filledCount} more for Trio Offer`;
+    } else {
+        regularSum = 0;
+        displayTotal = tierPrice;
+        savings = 0;
+        formulaText = `Select 3 flacons to curate your bespoke coffret`;
+    }
+
+    const savingsPercent = regularSum > 0 && savings > 0 ? Math.round((savings / regularSum) * 100) : 0;
+
+    return {
+        size,
+        filledCount,
+        actualSum,
+        regularSum,
+        displayTotal,
+        savings,
+        savingsPercent,
+        formulaText
+    };
+}
+
 function renderGiftBox() {
     const size = APP.giftBox.size;
     const pricing = GIFT_BOX_PRICING[size];
+    const calc = calculateGiftBoxTotals();
 
     // 1. Update Box Header & Size Title
     const sizeTitleEl = document.getElementById("gift-box-size-title");
@@ -312,7 +371,7 @@ function renderGiftBox() {
     }
 
     // 2. Update Slots Counter
-    const filledCount = APP.giftBox.slots.filter(s => s !== null).length;
+    const filledCount = calc.filledCount;
     const counterBadge = document.getElementById("slot-counter-badge");
     if (counterBadge) {
         if (filledCount === 3) {
@@ -355,7 +414,8 @@ function renderGiftBox() {
                 </div>
             `;
         } else {
-            // FILLED SLOT WITH REAL BOTTLE PHOTOGRAPHY
+            // FILLED SLOT WITH REAL BOTTLE PHOTOGRAPHY & DYNAMIC PRICE
+            const slotPrice = perfume.prices[size];
             slotEl.className = "coffret-slot slot-filled rounded-2xl p-2 sm:p-3.5 flex flex-col items-center justify-between transition-all duration-300 relative group";
             slotEl.innerHTML = `
                 <!-- Slot Header & Remove Button -->
@@ -375,15 +435,17 @@ function renderGiftBox() {
                     <div class="flacon-pedestal-disc mt-1 pointer-events-none"></div>
                 </div>
 
-                <!-- Polished Brass Gold Plaque Nameplate -->
+                <!-- Polished Brass Gold Plaque Nameplate with Exact Bottle Price -->
                 <div class="w-full brass-plaque rounded-lg px-1.5 py-1 sm:py-1.5 text-center relative z-10">
                     <h4 class="font-cinzel text-[10px] sm:text-xs font-black text-gold-200 uppercase tracking-wider truncate">
                         ${perfume.name}
                     </h4>
-                    <div class="flex items-center justify-center space-x-1 mt-0.5 text-[7px] sm:text-[8px] font-mono text-gold-400 font-bold">
-                        <span>${size}ML</span>
+                    <div class="flex items-center justify-center space-x-1 mt-0.5 text-[7px] sm:text-[8px] font-mono font-bold">
+                        <span class="text-gray-300">${size}ML</span>
                         <span>•</span>
-                        <span class="text-emerald-400">35% EXTRAIT</span>
+                        <span class="text-gold-300 font-extrabold">₹${slotPrice}</span>
+                        <span>•</span>
+                        <span class="text-emerald-400">EXTRAIT</span>
                     </div>
                 </div>
             `;
@@ -411,23 +473,69 @@ function renderGiftBox() {
         packagingLabel.innerText = `WRAP: ${finishName} + ${ribbonName}`;
     }
 
-    // 7. Update Pricing and Savings (Both Desktop & Mobile)
+    // 7. Update Pricing and Savings with 100% Dynamic Math
     const totalEl = document.getElementById("box-total-price");
-    if (totalEl) totalEl.innerText = `₹${pricing.price.toLocaleString('en-IN')}`;
+    if (totalEl) totalEl.innerText = `₹${calc.displayTotal.toLocaleString('en-IN')}`;
 
     const regEl = document.getElementById("box-regular-price");
-    if (regEl) regEl.innerText = `₹${pricing.regular.toLocaleString('en-IN')}`;
+    if (regEl) {
+        if (calc.savings > 0) {
+            regEl.style.display = "inline";
+            regEl.innerText = `₹${calc.regularSum.toLocaleString('en-IN')}`;
+        } else {
+            regEl.style.display = "none";
+        }
+    }
 
     const savingsBadge = document.getElementById("box-savings-badge");
-    if (savingsBadge) savingsBadge.innerText = `SAVE ₹${pricing.savings.toLocaleString('en-IN')}`;
+    if (savingsBadge) {
+        if (calc.savings > 0) {
+            savingsBadge.className = "px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+            savingsBadge.innerText = `SAVE ₹${calc.savings.toLocaleString('en-IN')}`;
+        } else if (calc.filledCount === 3) {
+            savingsBadge.className = "px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-gold-500/20 text-gold-300 border border-gold-500/30";
+            savingsBadge.innerText = "VAULT READY";
+        } else {
+            savingsBadge.className = "px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-white/10 text-gray-300 border border-white/20";
+            savingsBadge.innerText = `${calc.filledCount}/3 SELECTED`;
+        }
+    }
 
     const btnPriceTag = document.getElementById("btn-gift-price-tag");
-    if (btnPriceTag) btnPriceTag.innerText = `• ₹${pricing.price.toLocaleString('en-IN')}`;
+    if (btnPriceTag) btnPriceTag.innerText = `• ₹${calc.displayTotal.toLocaleString('en-IN')}`;
 
-    document.querySelectorAll(".box-total-price-val").forEach(el => el.innerText = `₹${pricing.price.toLocaleString('en-IN')}`);
-    document.querySelectorAll(".box-regular-price-val").forEach(el => el.innerText = `₹${pricing.regular.toLocaleString('en-IN')}`);
-    document.querySelectorAll(".box-savings-badge-val").forEach(el => el.innerText = `SAVE ₹${pricing.savings.toLocaleString('en-IN')}`);
-    document.querySelectorAll(".btn-gift-price-tag-val").forEach(el => el.innerText = `• ₹${pricing.price.toLocaleString('en-IN')}`);
+    // Update all matching elements across mobile & desktop
+    document.querySelectorAll(".box-total-price-val").forEach(el => {
+        el.innerText = `₹${calc.displayTotal.toLocaleString('en-IN')}`;
+    });
+    document.querySelectorAll(".box-regular-price-val").forEach(el => {
+        if (calc.savings > 0) {
+            el.style.display = "inline";
+            el.innerText = `₹${calc.regularSum.toLocaleString('en-IN')}`;
+        } else {
+            el.style.display = "none";
+        }
+    });
+    document.querySelectorAll(".box-savings-badge-val").forEach(el => {
+        if (calc.savings > 0) {
+            el.className = "px-2.5 py-1 rounded-full text-[9px] sm:text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 box-savings-badge-val";
+            el.innerText = `SAVE ₹${calc.savings.toLocaleString('en-IN')}`;
+        } else if (calc.filledCount === 3) {
+            el.className = "px-2.5 py-1 rounded-full text-[9px] sm:text-[10px] font-mono font-bold bg-gold-500/20 text-gold-300 border border-gold-500/30 box-savings-badge-val";
+            el.innerText = "VAULT READY";
+        } else {
+            el.className = "px-2.5 py-1 rounded-full text-[9px] sm:text-[10px] font-mono font-bold bg-white/10 text-gray-300 border border-white/20 box-savings-badge-val";
+            el.innerText = `${calc.filledCount}/3 SELECTED`;
+        }
+    });
+    document.querySelectorAll(".btn-gift-price-tag-val").forEach(el => {
+        el.innerText = `• ₹${calc.displayTotal.toLocaleString('en-IN')}`;
+    });
+
+    // Update Live Math Breakdown Formula
+    document.querySelectorAll(".box-math-breakdown-val").forEach(el => {
+        el.innerText = calc.formulaText;
+    });
 
     // 8. Refresh Lucide Icons
     if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -437,12 +545,32 @@ function renderScentPaletteTray() {
     const tray = document.getElementById("scent-palette-tray");
     if (!tray) return;
 
+    const size = APP.giftBox.size;
+
+    // Render Quick Jump Fragrance Selector Tabs
+    const quickTabs = document.getElementById("scent-quick-tabs");
+    if (quickTabs) {
+        quickTabs.innerHTML = PERFUMES.map((perfume, idx) => {
+            const inBoxCount = APP.giftBox.slots.filter(s => s && s.id === perfume.id).length;
+            const price = perfume.prices[size];
+            return `
+                <button onclick="jumpToFragrance(${idx})" class="scent-tab-pill px-2.5 py-1 rounded-full border ${inBoxCount > 0 ? 'bg-gold-500/20 border-gold-500/50 text-gold-300' : 'bg-white/5 border-white/10 text-gray-300'} hover:border-gold-400 text-[9px] font-mono flex items-center space-x-1.5 cursor-pointer flex-shrink-0 active:scale-95 transition">
+                    <span class="font-bold text-gold-400">0${idx + 1}</span>
+                    <span class="truncate max-w-[80px]">${perfume.name.split(' ')[0]}</span>
+                    <span class="font-bold text-gold-300">₹${price}</span>
+                    ${inBoxCount > 0 ? `<span class="w-1.5 h-1.5 rounded-full bg-gold-400"></span>` : ''}
+                </button>
+            `;
+        }).join("");
+    }
+
     tray.innerHTML = PERFUMES.map((perfume, idx) => {
         const timesInBox = APP.giftBox.slots.filter(s => s && s.id === perfume.id).length;
         const isInBox = timesInBox > 0;
+        const price = perfume.prices[size];
 
         return `
-            <div class="scent-palette-card glass-panel rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-between text-center border ${isInBox ? 'card-in-box-translucent border-gold-400/70 shadow-[0_0_18px_rgba(212,175,55,0.2)]' : 'border-white/10 hover:border-gold-400/60'} transition-all duration-300 cursor-grab active:cursor-grabbing group relative select-none w-[132px] sm:w-auto flex-shrink-0 snap-center"
+            <div class="scent-palette-card glass-panel rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-between text-center border ${isInBox ? 'card-in-box-translucent border-gold-400/70 shadow-[0_0_18px_rgba(212,175,55,0.2)]' : 'border-white/10 hover:border-gold-400/60'} transition-all duration-300 cursor-grab active:cursor-grabbing group relative select-none w-[138px] sm:w-auto flex-shrink-0 snap-center"
                  draggable="true"
                  ondragstart="handleDragStart(event, ${idx})"
                  ondrag="handleCardDrag(event)"
@@ -453,7 +581,7 @@ function renderScentPaletteTray() {
                  ontouchend="handleTouchEnd(event, ${idx})"
                  ontouchcancel="handleTouchEnd(event, ${idx})">
                 
-                <!-- Dedicated Top Status Header: Slot Index & In-Box Badge (Physically separated above image, z-20) -->
+                <!-- Dedicated Top Status Header: Slot Index & In-Box Badge -->
                 <div class="w-full flex items-center justify-between min-h-[20px] px-0.5 relative z-20 mb-1 pointer-events-none">
                     <span class="text-[8px] font-mono font-bold ${isInBox ? 'text-gold-300' : 'text-gray-400/80'} uppercase">0${idx + 1}</span>
                     ${isInBox ? `
@@ -471,21 +599,46 @@ function renderScentPaletteTray() {
                     <img src="${perfume.image}" alt="${perfume.name}" class="flacon-cropped-view h-full w-auto max-h-[80px] sm:max-h-[96px] object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.85)] group-hover:scale-105 transition-transform duration-300 pointer-events-none" loading="lazy">
                 </div>
 
-                <!-- Perfume Info -->
+                <!-- Perfume Info with Explicit Bottle Price -->
                 <div class="w-full mt-1">
                     <span class="font-cinzel text-[11px] sm:text-xs font-black text-white uppercase block truncate">${perfume.name}</span>
-                    <span class="text-[9px] text-gold-400/90 font-mono block truncate">${perfume.tagline.split('&')[0]}</span>
+                    <div class="flex items-center justify-between text-[9px] font-mono mt-0.5 px-0.5">
+                        <span class="text-gray-400 truncate max-w-[75px]">${perfume.tagline.split('&')[0]}</span>
+                        <span class="font-extrabold text-gold-300">₹${price}</span>
+                    </div>
                 </div>
 
                 <!-- Add Button / Drag Hint -->
-                <button type="button" class="w-full mt-2 py-1.5 px-1.5 rounded-lg ${isInBox ? 'bg-gold-500/25 text-gold-300 border border-gold-500/40' : 'bg-gold-500/15 hover:bg-gold-500 hover:text-black text-gold-300'} border border-gold-500/40 text-[9px] font-bold uppercase transition pointer-events-auto min-h-[34px] flex items-center justify-center">
-                    ${isInBox ? '✓ In Vault' : '+ Place in Box'}
+                <button type="button" class="w-full mt-2 py-1.5 px-1.5 rounded-lg ${isInBox ? 'bg-gold-500/25 text-gold-300 border border-gold-500/40' : 'bg-gold-500/15 hover:bg-gold-500 hover:text-black text-gold-300'} border border-gold-500/40 text-[9px] font-bold uppercase transition pointer-events-auto min-h-[34px] flex items-center justify-center space-x-1">
+                    <span>${isInBox ? '✓ In Vault' : '+ Place in Box'}</span>
+                    <span class="text-[8px] font-mono font-normal opacity-80">(₹${price})</span>
                 </button>
             </div>
         `;
     }).join("");
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// Carousel Controls for Scent Palette Tray
+function scrollScentTray(direction) {
+    const tray = document.getElementById("scent-palette-tray");
+    if (!tray) return;
+    const cardWidth = 150;
+    tray.scrollBy({ left: direction * cardWidth, behavior: 'smooth' });
+    playSfx('click');
+}
+
+function jumpToFragrance(idx) {
+    const tray = document.getElementById("scent-palette-tray");
+    if (!tray) return;
+    const cards = tray.querySelectorAll(".scent-palette-card");
+    if (cards && cards[idx]) {
+        cards[idx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        cards[idx].classList.add("ring-2", "ring-gold-400");
+        setTimeout(() => cards[idx].classList.remove("ring-2", "ring-gold-400"), 900);
+        playSfx('click');
+    }
 }
 
 // ==========================================
@@ -581,10 +734,10 @@ function handleTouchMove(e) {
     const touch = e.touches[0];
     const dx = touch.clientX - touchStartX;
     const dy = touch.clientY - touchStartY;
-    const dist = Math.sqrt(dx * dx + dy * dy);
 
-    // If moving vertically or dragged noticeably, start flacon float
-    if (!isTouchDragging && (Math.abs(dy) > 12 || dist > 20)) {
+    // Only start bottle drag if moving UPWARDS towards the gift casket slots
+    // If movement is horizontal (swiping carousel left/right), DO NOT intercept!
+    if (!isTouchDragging && dy < -22 && Math.abs(dy) > Math.abs(dx) * 1.3) {
         isTouchDragging = true;
         playSfx('click');
         if (navigator.vibrate) navigator.vibrate(25);
@@ -777,6 +930,7 @@ function selectGiftBoxSize(size) {
     });
 
     renderGiftBox();
+    renderScentPaletteTray();
     showToast(`Selected ${size} ML Coffret Set`, "check");
 }
 
@@ -847,7 +1001,7 @@ function addGiftBoxToCart() {
     }
 
     const size = APP.giftBox.size;
-    const pricing = GIFT_BOX_PRICING[size];
+    const calc = calculateGiftBoxTotals();
     const recName = document.getElementById("gift-card-recipient")?.value.trim() || '';
     const sndName = document.getElementById("gift-card-sender")?.value.trim() || '';
     const msgText = document.getElementById("gift-card-message")?.value.trim() || '';
@@ -856,8 +1010,8 @@ function addGiftBoxToCart() {
         id: `giftbox-${Date.now()}`,
         isGiftBox: true,
         name: `Bespoke 3-Flacon Discovery Coffret`,
-        subtitle: `Curated trio: ${APP.giftBox.slots.map(s => s.name).join(', ')}`,
-        perfumes: APP.giftBox.slots.map(s => s.name),
+        subtitle: `Curated trio: ${APP.giftBox.slots.map(s => `${s.name} (₹${s.prices[size]})`).join(', ')}`,
+        perfumes: APP.giftBox.slots.map(s => `${s.name} (₹${s.prices[size]})`),
         perfumeImages: APP.giftBox.slots.map(s => s.image),
         size: size,
         sizeLabel: `3 × ${size}ML`,
@@ -868,7 +1022,9 @@ function addGiftBoxToCart() {
             sender: sndName,
             message: msgText
         },
-        price: pricing.price,
+        price: calc.displayTotal,
+        regularPrice: calc.regularSum,
+        savings: calc.savings,
         qty: 1,
         image: APP.giftBox.slots[0].image
     };
@@ -895,24 +1051,26 @@ function quickOrderGiftBoxWhatsApp() {
     }
 
     const size = APP.giftBox.size;
+    const calc = calculateGiftBoxTotals();
     const pricing = GIFT_BOX_PRICING[size];
     const finishName = APP.giftBox.boxFinish === 'obsidian' ? 'Obsidian Noir' : (APP.giftBox.boxFinish === 'emerald' ? 'Emerald Gold' : 'Diamond Pearl');
     const ribbonName = APP.giftBox.ribbon === 'gold' ? '24K Liquid Gold Silk' : (APP.giftBox.ribbon === 'noir' ? 'Midnight Satin' : 'Royal Ruby');
     const recName = document.getElementById("gift-card-recipient")?.value.trim() || 'Someone Extraordinary';
     const msgText = document.getElementById("gift-card-message")?.value.trim() || 'May your aura command every room.';
 
+    const perfumesList = APP.giftBox.slots.map((p, idx) => `   ${idx + 1}. ${p.name} (${size}ml - ₹${p.prices[size]})`).join('\n');
+
     let message = `*NEW ORDER - PERFUME KOMPANY BESPOKE GIFT VAULT*\n` +
         `----------------------------------------\n` +
         `✦ Item: Bespoke 3-Flacon Discovery Coffret\n` +
         `✦ Volume: 3 × ${size} ML (${pricing.label})\n` +
         `✦ Selected Extraits (35% Pure Oil):\n` +
-        `   1. ${APP.giftBox.slots[0].name}\n` +
-        `   2. ${APP.giftBox.slots[1].name}\n` +
-        `   3. ${APP.giftBox.slots[2].name}\n` +
-        `✦ Packaging Finish: ${finishName} Box\n` +
-        `✦ Silk Ribbon Wrap: ${ribbonName}\n` +
+        `${perfumesList}\n` +
+        `✦ Flacons Value: ₹${calc.regularSum.toLocaleString('en-IN')}\n` +
+        `✦ Coffret Special Price: *₹${calc.displayTotal.toLocaleString('en-IN')}*${calc.savings > 0 ? ` (Saved ₹${calc.savings.toLocaleString('en-IN')})` : ''}\n` +
+        `✦ Packaging Finish: ${finishName} Box (Complimentary)\n` +
+        `✦ Silk Ribbon Wrap: ${ribbonName} (Complimentary)\n` +
         `✦ Engraved Card: To "${recName}" - "${msgText}"\n` +
-        `✦ Bundle Price: *₹${pricing.price.toLocaleString('en-IN')}* (Saved ₹${pricing.savings})\n` +
         `✦ Delivery: Free Express VIP Courier\n` +
         `----------------------------------------\n` +
         `Please confirm my custom gift vault order and share payment link / delivery details. Thank you!`;

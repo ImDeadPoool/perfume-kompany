@@ -531,10 +531,24 @@ body {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
 }
 
-/* Scent Palette Tray Items */
+/* Scent Palette Tray Items & Carousel Navigation */
+#scent-palette-tray {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    touch-action: pan-x pan-y;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+#scent-palette-tray::-webkit-scrollbar {
+    display: none;
+}
+
 .scent-palette-card {
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    touch-action: pan-y;
+    touch-action: pan-x pan-y;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .scent-palette-card:hover {
@@ -546,6 +560,17 @@ body {
 
 .scent-palette-card:active {
     transform: scale(0.97);
+}
+
+.scent-tab-pill {
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.scent-tab-pill.active {
+    background: rgba(212, 175, 55, 0.25);
+    color: #f5d061;
+    border-color: rgba(212, 175, 55, 0.6);
 }
 
 /* Finish & Ribbon Pill Selectors */

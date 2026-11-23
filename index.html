@@ -327,11 +327,12 @@
                                     <span class="text-[9px] font-mono text-gray-400 uppercase tracking-wider block font-semibold">Coffret Total</span>
                                     <div class="flex items-baseline space-x-2">
                                         <span class="text-xl sm:text-2xl font-black font-mono text-gold-400 box-total-price-val">₹1,499</span>
-                                        <span class="text-xs text-gray-500 line-through box-regular-price-val">₹1,747</span>
+                                        <span class="text-xs text-gray-400 line-through box-regular-price-val">₹1,697</span>
                                     </div>
+                                    <span class="text-[8px] font-mono text-gold-400/90 box-math-breakdown-val block mt-0.5 truncate max-w-[210px]">3 Flacons: ₹549 + ₹599 + ₹549 = ₹1,697</span>
                                 </div>
                                 <span class="px-2.5 py-1 rounded-full text-[9px] sm:text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 box-savings-badge-val">
-                                    SAVE ₹248
+                                    SAVE ₹198
                                 </span>
                             </div>
 
@@ -361,45 +362,74 @@
 
                     </div>
 
-                    <!-- SCENT PALETTE TRAY: DRAGGABLE & TAPPABLE FLACONS -->
+                    <!-- SCENT PALETTE TRAY: DRAGGABLE & TAPPABLE FLACONS WITH CAROUSEL CONTROLS -->
                     <div class="glass-panel-deep p-4 sm:p-5 rounded-3xl border border-gold-500/30 space-y-3">
                         <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-2">
+                            <div class="flex items-center space-x-1.5 sm:space-x-2">
+                                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-gold-400"></i>
                                 <span class="text-xs font-mono font-bold text-gold-400 uppercase tracking-widest">
-                                    ✦ CHOOSE FROM OUR 5 SIGNATURE EXTRAITS:
+                                    5 SIGNATURE EXTRAITS:
                                 </span>
                             </div>
-                            <span class="text-[10px] text-gray-400 font-mono">Tap or drag flacon to place</span>
+                            
+                            <!-- Carousel Navigation Arrows & Swipe Hint -->
+                            <div class="flex items-center space-x-2">
+                                <span class="text-[9px] text-gray-400 font-mono hidden sm:inline">Tap or swipe flacon to place</span>
+                                <div class="flex items-center space-x-1">
+                                    <button onclick="scrollScentTray(-1)" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/5 hover:bg-gold-500 hover:text-black text-gold-300 border border-gold-500/30 flex items-center justify-center transition active:scale-90 cursor-pointer shadow" title="Previous Fragrance" aria-label="Previous">
+                                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                                    </button>
+                                    <button onclick="scrollScentTray(1)" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/5 hover:bg-gold-500 hover:text-black text-gold-300 border border-gold-500/30 flex items-center justify-center transition active:scale-90 cursor-pointer shadow" title="Next Fragrance" aria-label="Next">
+                                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- 5 Fragrances Horizontal Carousel / Grid (Mobile swipeable snap reel, desktop 5-col) -->
-                        <div id="scent-palette-tray" class="flex overflow-x-auto sm:grid sm:grid-cols-5 gap-2.5 sm:gap-3 pb-2 sm:pb-0 no-scrollbar snap-x touch-pan-x">
+                        <!-- Quick Jump Fragrance Selector Tabs (Mobile & Desktop) -->
+                        <div id="scent-quick-tabs" class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-1 text-[9px] font-mono">
+                            <!-- Populated in JS: [ 01 ONE BILLION ] [ 02 BLEU MIST ] [ 03 PARADOXE ] [ 04 10000 WISHES ] [ 05 ETERNA FLORA ] -->
+                        </div>
+
+                        <!-- 5 Fragrances Horizontal Carousel / Grid (Mobile swipeable snap reel with smooth overflow, desktop 5-col) -->
+                        <div id="scent-palette-tray" class="flex overflow-x-auto sm:grid sm:grid-cols-5 gap-2.5 sm:gap-3 pb-2 sm:pb-0 no-scrollbar snap-x touch-pan-x pr-10 sm:pr-0">
                             <!-- Injected dynamically via app.js -->
                         </div>
                     </div>
 
                     <!-- Checkout & Order Summary Bar (Accessible across all screens) -->
                     <div class="glass-panel-deep p-4 sm:p-5 rounded-3xl border border-gold-500/35 space-y-3 shadow-xl">
-                        <div class="flex items-center justify-between pb-2 border-b border-white/10">
-                            <div>
-                                <span class="text-[10px] text-gray-400 uppercase tracking-wider block font-semibold">Coffret Total Price</span>
-                                <div class="flex items-baseline space-x-2">
-                                    <span class="text-2xl font-black font-mono text-gold-400 box-total-price-val">₹1,499</span>
-                                    <span class="text-xs text-gray-500 line-through box-regular-price-val">₹1,747</span>
+                        <div class="pb-2.5 border-b border-white/10">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="text-[10px] text-gray-400 uppercase tracking-wider block font-semibold">Coffret Total Price</span>
+                                    <div class="flex items-baseline space-x-2">
+                                        <span class="text-2xl font-black font-mono text-gold-400 box-total-price-val">₹1,499</span>
+                                        <span class="text-xs text-gray-400 line-through box-regular-price-val">₹1,697</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[9px] text-emerald-400 font-bold uppercase tracking-wider block">BUNDLE SAVINGS</span>
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 box-savings-badge-val">
+                                        SAVE ₹198
+                                    </span>
                                 </div>
                             </div>
-                            <div class="text-right">
-                                <span class="text-[9px] text-emerald-400 font-bold uppercase tracking-wider block">BUNDLE SAVINGS</span>
-                                <span class="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 box-savings-badge-val">
-                                    SAVE ₹248
+
+                            <!-- Live Mathematical Calculation Breakdown -->
+                            <div class="mt-2 pt-2 border-t border-white/5 flex items-center justify-between text-[9px] sm:text-[10px] font-mono text-gray-400">
+                                <span class="flex items-center space-x-1.5 truncate">
+                                    <i data-lucide="calculator" class="w-3.5 h-3.5 text-gold-400 flex-shrink-0"></i>
+                                    <span class="box-math-breakdown-val truncate">3 Flacons: ₹549 + ₹599 + ₹549 = ₹1,697</span>
                                 </span>
+                                <span class="text-emerald-400 font-bold flex-shrink-0 ml-1">Free Gift Box</span>
                             </div>
                         </div>
 
                         <button onclick="addGiftBoxToCart()" class="gold-btn w-full py-4 rounded-2xl text-black font-black uppercase text-xs tracking-widest flex items-center justify-center space-x-2 shadow-[0_0_25px_rgba(212,175,55,0.4)] cursor-pointer active:scale-95">
                             <i data-lucide="gift" class="w-4 h-4 stroke-[2.5]"></i>
                             <span>ADD GIFT VAULT TO BAG</span>
-                            <span class="btn-gift-price-tag-val">• ₹1,499</span>
+                            <span class="btn-gift-price-tag-val font-mono font-black">• ₹1,499</span>
                         </button>
 
                         <button onclick="quickOrderGiftBoxWhatsApp()" class="w-full py-3 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/40 rounded-2xl text-xs font-bold uppercase tracking-wider transition flex items-center justify-center space-x-2 cursor-pointer active:scale-95">
