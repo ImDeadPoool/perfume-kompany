@@ -440,10 +440,13 @@ function renderScentPaletteTray() {
             <div class="scent-palette-card glass-panel rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-between text-center border ${isInBox ? 'border-gold-400 bg-gold-950/25 shadow-[0_0_18px_rgba(212,175,55,0.22)]' : 'border-white/10 hover:border-gold-400/60'} transition-all duration-300 cursor-grab active:cursor-grabbing group relative select-none w-[132px] sm:w-auto flex-shrink-0 snap-center"
                  draggable="true"
                  ondragstart="handleDragStart(event, ${idx})"
+                 ondrag="handleCardDrag(event)"
+                 ondragend="handleCardDragEnd()"
                  onclick="handlePalettePerfumeClick(${idx})"
                  ontouchstart="handleTouchStart(event, ${idx})"
                  ontouchmove="handleTouchMove(event)"
-                 ontouchend="handleTouchEnd(event, ${idx})">
+                 ontouchend="handleTouchEnd(event, ${idx})"
+                 ontouchcancel="handleTouchEnd(event, ${idx})">
                 
                 <!-- Dedicated Top Status Header: Slot Index & In-Box Badge (Physically separated above image, z-20) -->
                 <div class="w-full flex items-center justify-between min-h-[20px] px-0.5 relative z-20 mb-1 pointer-events-none">
@@ -480,40 +483,187 @@ function renderScentPaletteTray() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-// Drag & Drop Handlers
+// ==========================================
+// TACTILE DRAG & DROP ENGINE (Touch + Mouse with Real Floating Flacon)
+// ==========================================
+let activeDragPerfumeIndex = null;
+let isTouchDragging = false;
+let touchStartX = 0;
+let touchStartY = 0;
+let currentHoveredSlot = null;
+
+function showDragAvatar(perfumeIndex, x, y) {
+    const avatar = document.getElementById("dragged-bottle-avatar");
+    const img = document.getElementById("dragged-bottle-img");
+    const nameEl = document.getElementById("dragged-bottle-name");
+    const perfume = PERFUMES[perfumeIndex];
+    if (!avatar || !img || !perfume) return;
+
+    img.src = perfume.image;
+    if (nameEl) nameEl.innerText = perfume.name;
+    
+    avatar.style.left = `${x}px`;
+    avatar.style.top = `${y}px`;
+    avatar.classList.remove("hidden");
+    avatar.style.display = "block";
+}
+
+function updateDragAvatarPos(x, y) {
+    const avatar = document.getElementById("dragged-bottle-avatar");
+    if (!avatar || avatar.classList.contains("hidden")) return;
+    avatar.style.left = `${x}px`;
+    avatar.style.top = `${y}px`;
+}
+
+function hideDragAvatar() {
+    const avatar = document.getElementById("dragged-bottle-avatar");
+    if (!avatar) return;
+    avatar.classList.add("hidden");
+    avatar.style.display = "none";
+}
+
+function getSlotUnderPoint(x, y) {
+    const avatar = document.getElementById("dragged-bottle-avatar");
+    const prevDisplay = avatar ? avatar.style.display : null;
+    if (avatar) avatar.style.display = "none";
+
+    const el = document.elementFromPoint(x, y);
+
+    if (avatar && prevDisplay) avatar.style.display = prevDisplay;
+
+    if (!el) return null;
+    for (let i = 0; i < 3; i++) {
+        const slot = document.getElementById(`coffret-slot-${i}`);
+        if (slot && (slot === el || slot.contains(el))) {
+            return i;
+        }
+    }
+    return null;
+}
+
+function setHoveredSlot(slotIdx) {
+    if (currentHoveredSlot === slotIdx) return;
+    
+    // Clear previous
+    if (currentHoveredSlot !== null) {
+        const prevSlot = document.getElementById(`coffret-slot-${currentHoveredSlot}`);
+        if (prevSlot) prevSlot.classList.remove("slot-drag-over");
+    }
+
+    currentHoveredSlot = slotIdx;
+
+    if (slotIdx !== null) {
+        const nextSlot = document.getElementById(`coffret-slot-${slotIdx}`);
+        if (nextSlot) {
+            nextSlot.classList.add("slot-drag-over");
+            playSfx('click');
+            if (navigator.vibrate) navigator.vibrate(15);
+        }
+    }
+}
+
+// Touch Event Handlers (Mobile)
+function handleTouchStart(e, perfumeIndex) {
+    activeDragPerfumeIndex = perfumeIndex;
+    isTouchDragging = false;
+    const touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+}
+
+function handleTouchMove(e) {
+    if (activeDragPerfumeIndex === null) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    // If moving vertically or dragged noticeably, start flacon float
+    if (!isTouchDragging && (Math.abs(dy) > 12 || dist > 20)) {
+        isTouchDragging = true;
+        playSfx('click');
+        if (navigator.vibrate) navigator.vibrate(25);
+    }
+
+    if (isTouchDragging) {
+        // Prevent default screen scrolling during bottle drag
+        if (e.cancelable) e.preventDefault();
+        
+        showDragAvatar(activeDragPerfumeIndex, touch.clientX, touch.clientY);
+        
+        const slotIdx = getSlotUnderPoint(touch.clientX, touch.clientY);
+        setHoveredSlot(slotIdx);
+    }
+}
+
+function handleTouchEnd(e, perfumeIndex) {
+    if (isTouchDragging && activeDragPerfumeIndex !== null) {
+        const touch = e.changedTouches[0];
+        const slotIdx = getSlotUnderPoint(touch.clientX, touch.clientY);
+        
+        hideDragAvatar();
+        setHoveredSlot(null);
+
+        if (slotIdx !== null) {
+            // Dropped onto slot!
+            assignPerfumeToSlot(activeDragPerfumeIndex, slotIdx);
+            animateSlotDrop(slotIdx);
+        }
+
+        isTouchDragging = false;
+        activeDragPerfumeIndex = null;
+        return;
+    }
+
+    // Reset touch state
+    hideDragAvatar();
+    setHoveredSlot(null);
+    isTouchDragging = false;
+    activeDragPerfumeIndex = null;
+}
+
+// Desktop HTML5 Drag Handlers
 function handleDragStart(e, perfumeIndex) {
-    draggedPerfumeIndex = perfumeIndex;
+    activeDragPerfumeIndex = perfumeIndex;
     if (e.dataTransfer) {
         e.dataTransfer.setData("text/plain", perfumeIndex.toString());
         e.dataTransfer.effectAllowed = "copyMove";
+        showDragAvatar(perfumeIndex, e.clientX, e.clientY);
     }
     playSfx('click');
+}
+
+function handleCardDrag(e) {
+    if (e.clientX === 0 && e.clientY === 0) return;
+    updateDragAvatarPos(e.clientX, e.clientY);
+    const slotIdx = getSlotUnderPoint(e.clientX, e.clientY);
+    setHoveredSlot(slotIdx);
+}
+
+function handleCardDragEnd() {
+    hideDragAvatar();
+    setHoveredSlot(null);
+    activeDragPerfumeIndex = null;
 }
 
 function handleSlotDragOver(e, slotIndex) {
     e.preventDefault();
     if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
-    const slotEl = document.getElementById(`coffret-slot-${slotIndex}`);
-    if (slotEl) {
-        slotEl.classList.add("slot-drag-over");
-    }
+    setHoveredSlot(slotIndex);
 }
 
 function handleSlotDragLeave(e, slotIndex) {
-    const slotEl = document.getElementById(`coffret-slot-${slotIndex}`);
-    if (slotEl) {
-        slotEl.classList.remove("slot-drag-over");
+    if (currentHoveredSlot === slotIndex) {
+        setHoveredSlot(null);
     }
 }
 
 function handleSlotDrop(e, slotIndex) {
     e.preventDefault();
-    const slotEl = document.getElementById(`coffret-slot-${slotIndex}`);
-    if (slotEl) {
-        slotEl.classList.remove("slot-drag-over");
-    }
+    hideDragAvatar();
+    setHoveredSlot(null);
 
-    let perfIdx = draggedPerfumeIndex;
+    let perfIdx = activeDragPerfumeIndex;
     if (e.dataTransfer) {
         const data = e.dataTransfer.getData("text/plain");
         if (data !== "") perfIdx = parseInt(data);
@@ -521,49 +671,19 @@ function handleSlotDrop(e, slotIndex) {
 
     if (perfIdx !== null && PERFUMES[perfIdx]) {
         assignPerfumeToSlot(perfIdx, slotIndex);
+        animateSlotDrop(slotIndex);
     }
-    draggedPerfumeIndex = null;
+    activeDragPerfumeIndex = null;
 }
 
-// Mobile Touch Drag Helpers
-function handleTouchStart(e, perfumeIndex) {
-    activeTouchPerfumeIndex = perfumeIndex;
-}
-
-function handleTouchMove(e) {
-    if (activeTouchPerfumeIndex === null) return;
-    const touch = e.touches[0];
-    const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
-    
-    // Highlight slot if dragged over
-    [0, 1, 2].forEach(idx => {
-        const slot = document.getElementById(`coffret-slot-${idx}`);
-        if (slot) {
-            if (slot.contains(targetEl) || slot === targetEl) {
-                slot.classList.add("slot-drag-over");
-            } else {
-                slot.classList.remove("slot-drag-over");
-            }
-        }
-    });
-}
-
-function handleTouchEnd(e, perfumeIndex) {
-    if (activeTouchPerfumeIndex === null) return;
-    const changedTouch = e.changedTouches[0];
-    const targetEl = document.elementFromPoint(changedTouch.clientX, changedTouch.clientY);
-
-    [0, 1, 2].forEach(idx => {
-        const slot = document.getElementById(`coffret-slot-${idx}`);
-        if (slot) {
-            slot.classList.remove("slot-drag-over");
-            if (slot.contains(targetEl) || slot === targetEl) {
-                assignPerfumeToSlot(perfumeIndex, idx);
-            }
-        }
-    });
-
-    activeTouchPerfumeIndex = null;
+function animateSlotDrop(slotIndex) {
+    const slotEl = document.getElementById(`coffret-slot-${slotIndex}`);
+    if (slotEl) {
+        slotEl.classList.remove("flacon-drop-snap");
+        void slotEl.offsetWidth; // Force reflow
+        slotEl.classList.add("flacon-drop-snap");
+        setTimeout(() => slotEl.classList.remove("flacon-drop-snap"), 500);
+    }
 }
 
 // 1-Tap Quick Action (Instant Touch Friendly)
@@ -1076,6 +1196,9 @@ function renderCartUI() {
     // Update Nav Count
     const navCount = document.getElementById("cart-nav-count");
     if (navCount) navCount.innerText = `BAG (${totalCount})`;
+
+    const navBadge = document.getElementById("cart-nav-count-badge");
+    if (navBadge) navBadge.innerText = totalCount;
 
     const drawerCount = document.getElementById("cart-drawer-count-badge");
     if (drawerCount) drawerCount.innerText = totalCount;

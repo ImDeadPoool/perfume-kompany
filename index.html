@@ -56,21 +56,21 @@
     <!-- STICKY LUXURY NAVIGATION BAR -->
     <!-- ========================================== -->
     <header class="sticky top-0 z-40 glass-panel-deep border-b border-gold-500/20 safe-top">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 h-14 sm:h-20 flex items-center justify-between gap-1 sm:gap-4">
             
             <!-- Left: Mobile Menu Toggle & Brand Logo -->
-            <div class="flex items-center space-x-3 sm:space-x-4">
-                <button onclick="toggleMobileNav()" class="p-2 sm:hidden text-gray-300 hover:text-gold-400 transition" aria-label="Toggle Menu">
-                    <i data-lucide="menu" class="w-6 h-6"></i>
+            <div class="flex items-center space-x-2 sm:space-x-4 min-w-0">
+                <button onclick="toggleMobileNav()" class="p-1.5 sm:p-2 sm:hidden text-gray-300 hover:text-gold-400 transition flex-shrink-0" aria-label="Toggle Menu">
+                    <i data-lucide="menu" class="w-5 h-5 sm:w-6 sm:h-6"></i>
                 </button>
 
-                <a href="#hero" class="flex items-center space-x-2.5 group">
-                    <img src="images/pk-logo.jpg" alt="PK Monogram" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-cover border border-gold-500/40 shadow-[0_0_15px_rgba(212,175,55,0.3)] group-hover:scale-105 transition">
-                    <div>
-                        <span class="font-cinzel text-sm sm:text-lg font-black tracking-widest text-white block leading-none">
+                <a href="#hero" class="flex items-center space-x-2 group min-w-0">
+                    <img src="images/pk-logo.jpg" alt="PK Monogram" class="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl object-cover border border-gold-500/40 shadow-[0_0_15px_rgba(212,175,55,0.3)] group-hover:scale-105 transition flex-shrink-0">
+                    <div class="min-w-0">
+                        <span class="font-cinzel text-xs sm:text-lg font-black tracking-wider text-white block leading-tight whitespace-nowrap">
                             PERFUME<span class="text-gold-400">KOMPANY</span>
                         </span>
-                        <span class="text-[8px] sm:text-[9px] uppercase tracking-[0.25em] text-gold-400/80 font-bold block mt-0.5">
+                        <span class="text-[7px] sm:text-[9px] uppercase tracking-[0.2em] text-gold-400/80 font-bold block mt-0.5 whitespace-nowrap">
                             HAUTE PARFUMERIE
                         </span>
                     </div>
@@ -89,17 +89,18 @@
                 <a href="#craft-section" class="hover:text-gold-400 transition">Our Craft</a>
             </nav>
 
-            <!-- Right: Sound Toggle, Currency Badge, and Shopping Bag -->
-            <div class="flex items-center space-x-2 sm:space-x-3">
-                <button onclick="toggleSound()" id="sound-btn" class="p-2 sm:px-2.5 sm:py-2 glass-panel rounded-xl text-gold-400 hover:text-white transition flex items-center space-x-1.5 text-xs font-bold" title="Toggle Tactile Audio">
-                    <i data-lucide="volume-2" id="sound-icon" class="w-4 h-4"></i>
+            <!-- Right: Sound Toggle and Shopping Bag (Fully responsive, no overflow) -->
+            <div class="flex items-center space-x-1.5 sm:space-x-3 flex-shrink-0">
+                <button onclick="toggleSound()" id="sound-btn" class="w-8 h-8 sm:w-auto sm:px-2.5 sm:py-2 glass-panel rounded-xl text-gold-400 hover:text-white transition flex items-center justify-center space-x-1.5 text-xs font-bold" title="Toggle Tactile Audio">
+                    <i data-lucide="volume-2" id="sound-icon" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                     <span class="hidden lg:inline text-[10px]">SOUND ON</span>
                 </button>
 
-                <!-- Shopping Bag Button with Live Badge -->
-                <button onclick="openCartDrawer()" id="cart-nav-btn" class="gold-btn px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl text-black font-extrabold text-[11px] sm:text-xs uppercase tracking-wider flex items-center space-x-2 cursor-pointer shadow-lg active:scale-95">
+                <!-- Shopping Bag Button with Live Badge (Compact on mobile, expanded on desktop) -->
+                <button onclick="openCartDrawer()" id="cart-nav-btn" class="gold-btn w-9 h-9 sm:w-auto sm:px-4 sm:py-2.5 rounded-xl text-black font-extrabold text-[11px] sm:text-xs uppercase tracking-wider flex items-center justify-center sm:space-x-2 cursor-pointer shadow-lg active:scale-95 relative" aria-label="Shopping Bag">
                     <i data-lucide="shopping-bag" class="w-4 h-4 text-black stroke-[2.5]"></i>
-                    <span id="cart-nav-count">BAG (0)</span>
+                    <span class="hidden sm:inline" id="cart-nav-count">BAG (0)</span>
+                    <span id="cart-nav-count-badge" class="sm:hidden absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 bg-black text-gold-300 rounded-full text-[9px] font-mono font-black flex items-center justify-center border border-gold-500 shadow-md">0</span>
                 </button>
             </div>
         </div>
@@ -997,6 +998,20 @@
 
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none space-y-2"></div>
+
+    <!-- Floating Interactive Drag Flacon Avatar (Real bottle following finger/cursor) -->
+    <div id="dragged-bottle-avatar" class="fixed pointer-events-none z-[99999] hidden -translate-x-1/2 -translate-y-1/2 select-none" style="top: -999px; left: -999px;">
+        <div class="relative w-24 h-36 flex flex-col items-center justify-center animate-pulse">
+            <!-- Radiant Golden Aura Background -->
+            <div class="absolute inset-0 bg-radial from-amber-400/50 via-gold-500/25 to-transparent rounded-full filter blur-md"></div>
+            <!-- Crystal Bottle Image with 3D Float Angle & Shadow -->
+            <img id="dragged-bottle-img" src="" alt="Dragging Flacon" class="flacon-cropped-view h-28 w-auto object-contain filter drop-shadow-[0_20px_35px_rgba(0,0,0,0.95)] drop-shadow-[0_0_25px_rgba(245,208,97,0.8)] transform rotate-6 scale-110">
+            <!-- Floating Monogram Badge -->
+            <div id="dragged-bottle-name" class="mt-1 bg-black/95 border border-gold-400 text-gold-300 font-cinzel text-[9px] font-black px-2.5 py-0.5 rounded-full shadow-2xl tracking-wider uppercase whitespace-nowrap">
+                EXTRAIT
+            </div>
+        </div>
+    </div>
 
     <!-- Live Social Proof Purchase Notification (South India / Kerala, Compact Mobile First) -->
     <div id="social-proof-toast" class="fixed bottom-4 left-3 right-3 sm:left-6 sm:right-auto sm:max-w-xs z-50 pointer-events-none transform translate-y-16 opacity-0 transition-all duration-500 ease-out">
