@@ -145,11 +145,102 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 
                 <!-- Left: Physical Luxury Coffret Box with 3 Velvet Slots + Scent Tray -->
-                <div class="lg:col-span-7 space-y-6">
+                <div class="lg:col-span-7 space-y-5">
                     
-                    <!-- THE LUXURY COFFRET OPEN PRESENTATION VAULT -->
-                    <div id="gift-box-stage" class="relative rounded-3xl p-4 sm:p-7 shadow-[0_30px_90px_rgba(0,0,0,0.98)] transition-all duration-500 border-2 box-theme-obsidian">
+                    <!-- COFFRET SPECIFICATION & LUXURY DESIGN SUITE (Directly Above the Box) -->
+                    <div class="glass-panel-deep p-3.5 sm:p-5 rounded-3xl border border-gold-500/35 space-y-3.5 shadow-xl">
                         
+                        <!-- 1. Flacon Volume Selector -->
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5 text-xs">
+                                <span class="text-gold-300 font-bold uppercase tracking-wider text-[10px] sm:text-xs flex items-center space-x-1.5">
+                                    <i data-lucide="layers" class="w-3.5 h-3.5 text-gold-400"></i>
+                                    <span>1. SELECT COFFRET VOLUME:</span>
+                                </span>
+                                <span id="box-volume-summary" class="text-gold-400 text-[10px] font-mono font-bold">3 × 25 ML Set</span>
+                            </div>
+                            
+                            <div class="grid grid-cols-3 gap-2">
+                                <button onclick="selectGiftBoxSize(25)" id="box-size-btn-25" class="size-pill active p-2 sm:p-2.5 rounded-2xl text-center transition flex flex-col items-center justify-center space-y-0.5 min-h-[52px] cursor-pointer" aria-label="Select 3x25ml">
+                                    <span class="text-xs sm:text-sm font-black font-cinzel">3 × 25 ML</span>
+                                    <span class="text-[8px] sm:text-[9px] text-gray-400 uppercase">Pocket Trio</span>
+                                    <span class="text-xs font-mono font-black text-gold-400">₹1,499</span>
+                                    <span class="text-[8px] sm:text-[9px] text-emerald-400 font-mono font-bold">Save ₹248</span>
+                                </button>
+
+                                <button onclick="selectGiftBoxSize(50)" id="box-size-btn-50" class="size-pill p-2 sm:p-2.5 rounded-2xl text-center transition flex flex-col items-center justify-center space-y-0.5 min-h-[52px] cursor-pointer" aria-label="Select 3x50ml">
+                                    <span class="text-xs sm:text-sm font-black font-cinzel">3 × 50 ML</span>
+                                    <span class="text-[8px] sm:text-[9px] text-gray-400 uppercase">Signature</span>
+                                    <span class="text-xs font-mono font-black text-gold-400">₹2,299</span>
+                                    <span class="text-[8px] sm:text-[9px] text-emerald-400 font-mono font-bold">Save ₹298</span>
+                                </button>
+
+                                <button onclick="selectGiftBoxSize(100)" id="box-size-btn-100" class="size-pill p-2 sm:p-2.5 rounded-2xl text-center transition flex flex-col items-center justify-center space-y-0.5 min-h-[52px] cursor-pointer" aria-label="Select 3x100ml">
+                                    <span class="text-xs sm:text-sm font-black font-cinzel">3 × 100 ML</span>
+                                    <span class="text-[8px] sm:text-[9px] text-gray-400 uppercase">Collector</span>
+                                    <span class="text-xs font-mono font-black text-gold-400">₹3,199</span>
+                                    <span class="text-[8px] sm:text-[9px] text-emerald-400 font-mono font-bold">Save ₹398</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 2. Dual Quick Customizers: Box Finish & Silk Ribbon -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2.5 border-t border-white/10">
+                            <!-- Box Finish -->
+                            <div class="space-y-1.5">
+                                <label class="text-gray-300 font-bold uppercase tracking-wider text-[9px] sm:text-[10px] block">
+                                    2. LUXURY BOX CASING:
+                                </label>
+                                <div class="grid grid-cols-3 gap-1.5">
+                                    <button onclick="selectBoxFinish('obsidian')" id="box-finish-obsidian" class="finish-pill active p-1.5 sm:p-2 rounded-xl text-center border border-white/15 transition flex items-center justify-center space-x-1.5 min-h-[38px] cursor-pointer">
+                                        <span class="w-3.5 h-3.5 rounded-full bg-neutral-950 border border-gold-400 flex-shrink-0 shadow-sm"></span>
+                                        <span class="text-[10px] sm:text-[11px] font-bold text-white truncate">Obsidian</span>
+                                    </button>
+
+                                    <button onclick="selectBoxFinish('emerald')" id="box-finish-emerald" class="finish-pill p-1.5 sm:p-2 rounded-xl text-center border border-white/15 transition flex items-center justify-center space-x-1.5 min-h-[38px] cursor-pointer">
+                                        <span class="w-3.5 h-3.5 rounded-full bg-emerald-950 border border-emerald-400 flex-shrink-0 shadow-sm"></span>
+                                        <span class="text-[10px] sm:text-[11px] font-bold text-white truncate">Emerald</span>
+                                    </button>
+
+                                    <button onclick="selectBoxFinish('alabaster')" id="box-finish-alabaster" class="finish-pill p-1.5 sm:p-2 rounded-xl text-center border border-white/15 transition flex items-center justify-center space-x-1.5 min-h-[38px] cursor-pointer">
+                                        <span class="w-3.5 h-3.5 rounded-full bg-amber-50 border border-gold-400 flex-shrink-0 shadow-sm"></span>
+                                        <span class="text-[10px] sm:text-[11px] font-bold text-white truncate">Pearl</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Ribbon Wrap -->
+                            <div class="space-y-1.5">
+                                <label class="text-gray-300 font-bold uppercase tracking-wider text-[9px] sm:text-[10px] block">
+                                    3. HAND-TIED SILK RIBBON:
+                                </label>
+                                <div class="grid grid-cols-3 gap-1.5">
+                                    <button onclick="selectRibbonStyle('gold')" id="ribbon-style-gold" class="ribbon-pill active p-1.5 sm:p-2 rounded-xl text-center border border-white/15 transition flex items-center justify-center space-x-1.5 min-h-[38px] cursor-pointer">
+                                        <span class="w-3 h-3 rounded-full bg-gradient-to-r from-amber-300 to-yellow-600 flex-shrink-0"></span>
+                                        <span class="text-[10px] sm:text-[11px] font-bold text-white truncate">24K Gold</span>
+                                    </button>
+
+                                    <button onclick="selectRibbonStyle('noir')" id="ribbon-style-noir" class="ribbon-pill p-1.5 sm:p-2 rounded-xl text-center border border-white/15 transition flex items-center justify-center space-x-1.5 min-h-[38px] cursor-pointer">
+                                        <span class="w-3 h-3 rounded-full bg-neutral-900 border border-white/40 flex-shrink-0"></span>
+                                        <span class="text-[10px] sm:text-[11px] font-bold text-white truncate">Noir Satin</span>
+                                    </button>
+
+                                    <button onclick="selectRibbonStyle('ruby')" id="ribbon-style-ruby" class="ribbon-pill p-1.5 sm:p-2 rounded-xl text-center border border-white/15 transition flex items-center justify-center space-x-1.5 min-h-[38px] cursor-pointer">
+                                        <span class="w-3 h-3 rounded-full bg-rose-900 border border-rose-400 flex-shrink-0"></span>
+                                        <span class="text-[10px] sm:text-[11px] font-bold text-white truncate">Ruby</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                    <!-- THE LUXURY COFFRET OPEN PRESENTATION VAULT (Physical 3D Casket Feel) -->
+                    <div id="gift-box-stage" class="relative rounded-3xl p-4 sm:p-7 shadow-[0_35px_90px_rgba(0,0,0,0.98)] transition-all duration-500 border-2 box-theme-obsidian">
+                        
+                        <!-- Brushed 24K Gold Metal Inner Lip Running around open Casket -->
+                        <div class="box-casket-rim"></div>
+
                         <!-- 4 24K Gold Corner Hardware Brackets -->
                         <div class="gold-corner gold-corner-tl"></div>
                         <div class="gold-corner gold-corner-tr"></div>
@@ -166,36 +257,36 @@
                         <!-- Coffret Interior Lid & Header -->
                         <div class="flex items-center justify-between pb-3.5 sm:pb-4 border-b border-gold-500/25 relative z-10">
                             <div class="flex items-center space-x-2.5 sm:space-x-3">
-                                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-gold-500/30 to-amber-900/40 border border-gold-500/50 flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.25)]">
-                                    <i data-lucide="crown" class="w-5 h-5 text-gold-400"></i>
+                                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-gold-500/30 to-amber-900/40 border border-gold-500/50 flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.25)] flex-shrink-0">
+                                    <i data-lucide="crown" class="w-4 h-4 sm:w-5 sm:h-5 text-gold-400"></i>
                                 </div>
-                                <div>
+                                <div class="min-w-0">
                                     <div class="flex items-center space-x-2">
-                                        <span class="font-cinzel text-xs sm:text-base font-black tracking-widest text-white uppercase block">
+                                        <span class="font-cinzel text-xs sm:text-base font-black tracking-widest text-white uppercase block truncate">
                                             PERFUME KOMPANY
                                         </span>
-                                        <span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-gold-500/20 text-gold-300 border border-gold-500/30 font-bold uppercase hidden sm:inline">
+                                        <span class="text-[8px] font-mono px-2 py-0.5 rounded-full bg-gold-500/20 text-gold-300 border border-gold-500/30 font-bold uppercase hidden sm:inline">
                                             ROYAL COFFRET
                                         </span>
                                     </div>
-                                    <span class="text-[9px] sm:text-[10px] uppercase tracking-wider text-gray-300 block mt-0.5" id="gift-box-size-title">
+                                    <span class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-300 block mt-0.5 truncate" id="gift-box-size-title">
                                         HAND-CRAFTED 3 × 25ML POCKET DISCOVERY SET
                                     </span>
                                 </div>
                             </div>
 
-                            <div class="flex items-center space-x-2">
-                                <span id="slot-counter-badge" class="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-gold-500/20 text-gold-300 border border-gold-500/40">
+                            <div class="flex items-center space-x-2 flex-shrink-0">
+                                <span id="slot-counter-badge" class="px-2.5 py-1 rounded-full text-[9px] sm:text-[10px] font-mono font-bold bg-gold-500/20 text-gold-300 border border-gold-500/40 whitespace-nowrap">
                                     0 / 3 SLOTS FILLED
                                 </span>
-                                <button onclick="clearGiftBoxSlots()" class="p-1.5 sm:p-2 rounded-xl glass-panel text-gray-400 hover:text-white transition" title="Reset All 3 Slots">
+                                <button onclick="clearGiftBoxSlots()" class="p-1.5 sm:p-2 rounded-xl glass-panel text-gray-400 hover:text-white transition cursor-pointer" title="Reset All 3 Slots" aria-label="Reset Slots">
                                     <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
                                 </button>
                             </div>
                         </div>
 
                         <!-- 3 RECESSED VELVET FLACON NICHES (SIDE-BY-SIDE ON ALL SCREENS) -->
-                        <div class="grid grid-cols-3 gap-2 sm:gap-4.5 pt-4 sm:pt-6 pb-3 relative z-10">
+                        <div class="grid grid-cols-3 gap-2 sm:gap-4.5 pt-3.5 sm:pt-6 pb-3 relative z-10">
                             
                             <!-- Slot 1 -->
                             <div id="coffret-slot-0" 
@@ -229,14 +320,14 @@
 
                         </div>
 
-                        <!-- Bottom Velvet Plate & Engraving Banner -->
-                        <div class="mt-2 pt-3 border-t border-gold-500/20 flex flex-col sm:flex-row items-center justify-between text-[9px] sm:text-[10px] text-gray-400 gap-1.5 sm:gap-2 relative z-10">
-                            <span class="flex items-center space-x-1.5">
-                                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-gold-400"></i>
-                                <span>Recessed Obsidian Velvet Niches • Magnetic Clasp • 24K Gold Stamped</span>
+                        <!-- Bottom Velvet Plate & Magnetic Front Clasp -->
+                        <div class="mt-2 pt-3 border-t border-gold-500/20 flex items-center justify-between text-[8px] sm:text-[10px] text-gray-400 gap-1.5 relative z-10">
+                            <span class="flex items-center space-x-1.5 truncate">
+                                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-gold-400 flex-shrink-0"></i>
+                                <span class="truncate">Recessed Obsidian Velvet Niches • Magnetic Clasp</span>
                             </span>
-                            <span class="text-gold-400 font-mono font-bold" id="gift-box-packaging-label">
-                                WRAP: OBSIDIAN NOIR + 24K GOLD SILK
+                            <span class="casket-front-clasp flex-shrink-0">
+                                PK SEAL • 24K
                             </span>
                         </div>
 
@@ -257,6 +348,36 @@
                         <div id="scent-palette-tray" class="flex overflow-x-auto sm:grid sm:grid-cols-5 gap-2.5 sm:gap-3 pb-2 sm:pb-0 no-scrollbar snap-x touch-pan-x">
                             <!-- Injected dynamically via app.js -->
                         </div>
+                    </div>
+
+                    <!-- Mobile Portrait Quick Checkout Bar (Ergonomic One-Tap Action on Mobile) -->
+                    <div class="lg:hidden glass-panel-deep p-4 sm:p-5 rounded-3xl border border-gold-500/35 space-y-3 shadow-xl">
+                        <div class="flex items-center justify-between pb-2 border-b border-white/10">
+                            <div>
+                                <span class="text-[10px] text-gray-400 uppercase tracking-wider block font-semibold">Coffret Total Price</span>
+                                <div class="flex items-baseline space-x-2">
+                                    <span class="text-2xl font-black font-mono text-gold-400 box-total-price-val">₹1,499</span>
+                                    <span class="text-xs text-gray-500 line-through box-regular-price-val">₹1,747</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[9px] text-emerald-400 font-bold uppercase tracking-wider block">BUNDLE SAVINGS</span>
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 box-savings-badge-val">
+                                    SAVE ₹248
+                                </span>
+                            </div>
+                        </div>
+
+                        <button onclick="addGiftBoxToCart()" class="gold-btn w-full py-4 rounded-2xl text-black font-black uppercase text-xs tracking-widest flex items-center justify-center space-x-2 shadow-[0_0_25px_rgba(212,175,55,0.4)] cursor-pointer active:scale-95">
+                            <i data-lucide="gift" class="w-4 h-4 stroke-[2.5]"></i>
+                            <span>ADD GIFT VAULT TO BAG</span>
+                            <span class="btn-gift-price-tag-val">• ₹1,499</span>
+                        </button>
+
+                        <button onclick="quickOrderGiftBoxWhatsApp()" class="w-full py-3 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/40 rounded-2xl text-xs font-bold uppercase tracking-wider transition flex items-center justify-center space-x-2 cursor-pointer active:scale-95">
+                            <i data-lucide="message-circle" class="w-4 h-4"></i>
+                            <span>Quick Order via WhatsApp</span>
+                        </button>
                     </div>
 
                 </div>
@@ -283,83 +404,29 @@
                         </p>
                     </div>
 
-                    <!-- 1. Volume Specification Selector -->
-                    <div class="space-y-2">
-                        <div class="flex items-center justify-between text-xs">
-                            <label class="text-gray-300 font-bold uppercase tracking-wider text-[10px] sm:text-xs">
-                                1. SELECT COFFRET VOLUME:
-                            </label>
-                            <span id="box-volume-summary" class="text-gold-400 text-[10px] font-mono font-bold">3 × 25 ML Set</span>
-                        </div>
-                        
-                        <div class="grid grid-cols-3 gap-2">
-                            <button onclick="selectGiftBoxSize(25)" id="box-size-btn-25" class="size-pill active p-2.5 rounded-2xl text-center transition flex flex-col items-center justify-center space-y-1">
-                                <span class="text-xs sm:text-sm font-black font-cinzel">3 × 25 ML</span>
-                                <span class="text-[9px] text-gray-400 uppercase">Pocket Trio</span>
-                                <span class="text-xs font-mono font-bold text-gold-400">₹1,499</span>
-                                <span class="text-[9px] text-emerald-400 font-mono">Save ₹248</span>
-                            </button>
-
-                            <button onclick="selectGiftBoxSize(50)" id="box-size-btn-50" class="size-pill p-2.5 rounded-2xl text-center transition flex flex-col items-center justify-center space-y-1">
-                                <span class="text-xs sm:text-sm font-black font-cinzel">3 × 50 ML</span>
-                                <span class="text-[9px] text-gray-400 uppercase">Signature</span>
-                                <span class="text-xs font-mono font-bold text-gold-400">₹2,299</span>
-                                <span class="text-[9px] text-emerald-400 font-mono">Save ₹298</span>
-                            </button>
-
-                            <button onclick="selectGiftBoxSize(100)" id="box-size-btn-100" class="size-pill p-2.5 rounded-2xl text-center transition flex flex-col items-center justify-center space-y-1">
-                                <span class="text-xs sm:text-sm font-black font-cinzel">3 × 100 ML</span>
-                                <span class="text-[9px] text-gray-400 uppercase">Collector</span>
-                                <span class="text-xs font-mono font-bold text-gold-400">₹3,199</span>
-                                <span class="text-[9px] text-emerald-400 font-mono">Save ₹398</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 2. Packaging Box Finish Selector -->
-                    <div class="space-y-2">
-                        <label class="text-gray-300 font-bold uppercase tracking-wider text-[10px] sm:text-xs block">
-                            2. SELECT LUXURY BOX FINISH:
-                        </label>
-                        <div class="grid grid-cols-3 gap-2">
-                            <button onclick="selectBoxFinish('obsidian')" id="box-finish-obsidian" class="finish-pill active p-2 rounded-xl text-center border border-white/15 transition flex items-center space-x-2">
-                                <span class="w-4 h-4 rounded-full bg-neutral-950 border border-gold-400 flex-shrink-0"></span>
-                                <span class="text-[11px] font-bold text-white truncate">Obsidian Noir</span>
-                            </button>
-
-                            <button onclick="selectBoxFinish('emerald')" id="box-finish-emerald" class="finish-pill p-2 rounded-xl text-center border border-white/15 transition flex items-center space-x-2">
-                                <span class="w-4 h-4 rounded-full bg-emerald-950 border border-emerald-400 flex-shrink-0"></span>
-                                <span class="text-[11px] font-bold text-white truncate">Emerald Gold</span>
-                            </button>
-
-                            <button onclick="selectBoxFinish('alabaster')" id="box-finish-alabaster" class="finish-pill p-2 rounded-xl text-center border border-white/15 transition flex items-center space-x-2">
-                                <span class="w-4 h-4 rounded-full bg-amber-50 border border-gold-400 flex-shrink-0"></span>
-                                <span class="text-[11px] font-bold text-white truncate">Diamond Pearl</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 3. Hand-Tied Silk Ribbon Selector -->
-                    <div class="space-y-2">
-                        <label class="text-gray-300 font-bold uppercase tracking-wider text-[10px] sm:text-xs block">
-                            3. SELECT SILK RIBBON WRAP:
-                        </label>
-                        <div class="grid grid-cols-3 gap-2">
-                            <button onclick="selectRibbonStyle('gold')" id="ribbon-style-gold" class="ribbon-pill active p-2 rounded-xl text-center border border-white/15 transition flex items-center space-x-2">
-                                <span class="w-3.5 h-3.5 rounded-full bg-gradient-to-r from-amber-300 to-yellow-600 flex-shrink-0"></span>
-                                <span class="text-[11px] font-bold text-white truncate">24K Liquid Gold</span>
-                            </button>
-
-                            <button onclick="selectRibbonStyle('noir')" id="ribbon-style-noir" class="ribbon-pill p-2 rounded-xl text-center border border-white/15 transition flex items-center space-x-2">
-                                <span class="w-3.5 h-3.5 rounded-full bg-neutral-900 border border-white/30 flex-shrink-0"></span>
-                                <span class="text-[11px] font-bold text-white truncate">Midnight Satin</span>
-                            </button>
-
-                            <button onclick="selectRibbonStyle('ruby')" id="ribbon-style-ruby" class="ribbon-pill p-2 rounded-xl text-center border border-white/15 transition flex items-center space-x-2">
-                                <span class="w-3.5 h-3.5 rounded-full bg-rose-900 border border-rose-400 flex-shrink-0"></span>
-                                <span class="text-[11px] font-bold text-white truncate">Royal Ruby</span>
-                            </button>
-                        </div>
+                    <!-- Curated Coffret Inclusions -->
+                    <div class="glass-panel p-3.5 sm:p-4 rounded-2xl border border-white/10 space-y-2.5">
+                        <span class="text-[10px] font-mono font-bold text-gold-400 uppercase tracking-widest block">
+                            VAULT INCLUSIONS:
+                        </span>
+                        <ul class="text-xs text-gray-300 space-y-2">
+                            <li class="flex items-center space-x-2">
+                                <i data-lucide="check" class="w-3.5 h-3.5 text-gold-400 flex-shrink-0"></i>
+                                <span>3 Signature Flacons in Handcrafted Velvet Niches</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <i data-lucide="check" class="w-3.5 h-3.5 text-gold-400 flex-shrink-0"></i>
+                                <span>35% Pure Extrait de Parfum High Concentration</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <i data-lucide="check" class="w-3.5 h-3.5 text-gold-400 flex-shrink-0"></i>
+                                <span>Hand-Tied Silk Ribbon Wrap & 24K Gold Stamped Monogram</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <i data-lucide="check" class="w-3.5 h-3.5 text-gold-400 flex-shrink-0"></i>
+                                <span>Complimentary Engraved Gold Parchment Gift Card</span>
+                            </li>
+                        </ul>
                     </div>
 
                     <!-- 4. Personalized Engraved Gift Note (Interactive) -->

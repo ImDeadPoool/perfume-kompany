@@ -280,29 +280,87 @@ body {
     box-shadow: 1px 1px 8px rgba(212, 175, 55, 0.4);
 }
 
-/* Outer Box Color Finishes */
+/* 3D Box Inner Lip / Brushed Gold Casket Rim */
+.box-casket-rim {
+    position: absolute;
+    inset: 5px;
+    border-radius: 22px;
+    border: 1.5px solid rgba(245, 208, 97, 0.45);
+    box-shadow: 
+        inset 0 1px 2px rgba(255, 255, 255, 0.3),
+        inset 0 10px 25px rgba(0, 0, 0, 0.85),
+        0 2px 8px rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* Outer Box Color Finishes (Realistic 3D Presentation Casket Depth) */
 .box-theme-obsidian {
     background: 
-        radial-gradient(ellipse at 50% 15%, rgba(35, 40, 52, 0.95) 0%, rgba(10, 11, 15, 0.98) 70%),
-        linear-gradient(180deg, #12141a 0%, #07080a 100%) !important;
-    border: 2px solid rgba(212, 175, 55, 0.5) !important;
-    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(212, 175, 55, 0.15) !important;
+        radial-gradient(ellipse 90% 45% at 50% 0%, rgba(55, 62, 78, 0.75) 0%, transparent 70%),
+        radial-gradient(circle at 50% 100%, rgba(20, 22, 28, 0.98) 0%, #06070a 100%) !important;
+    border: 3px solid #d4af37 !important;
+    box-shadow: 
+        0 35px 90px rgba(0, 0, 0, 0.98),
+        inset 0 2px 4px rgba(255, 240, 180, 0.35),
+        inset 0 -4px 15px rgba(0, 0, 0, 0.9),
+        0 0 40px rgba(212, 175, 55, 0.22) !important;
 }
 
 .box-theme-emerald {
     background: 
-        radial-gradient(ellipse at 50% 15%, rgba(10, 58, 38, 0.95) 0%, rgba(3, 20, 13, 0.98) 70%),
-        linear-gradient(180deg, #093321 0%, #02120a 100%) !important;
-    border: 2px solid rgba(16, 185, 129, 0.6) !important;
-    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(16, 185, 129, 0.22) !important;
+        radial-gradient(ellipse 90% 45% at 50% 0%, rgba(16, 92, 58, 0.75) 0%, transparent 70%),
+        radial-gradient(circle at 50% 100%, rgba(5, 36, 23, 0.98) 0%, #02120a 100%) !important;
+    border: 3px solid #10b981 !important;
+    box-shadow: 
+        0 35px 90px rgba(0, 0, 0, 0.98),
+        inset 0 2px 4px rgba(110, 231, 183, 0.4),
+        inset 0 -4px 15px rgba(0, 0, 0, 0.9),
+        0 0 45px rgba(16, 185, 129, 0.28) !important;
 }
 
 .box-theme-alabaster {
     background: 
-        radial-gradient(ellipse at 50% 15%, rgba(255, 255, 250, 0.22) 0%, rgba(20, 22, 28, 0.98) 70%),
-        linear-gradient(180deg, #2a2c35 0%, #0d0f14 100%) !important;
-    border: 2px solid rgba(254, 240, 138, 0.65) !important;
-    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(254, 240, 138, 0.2) !important;
+        radial-gradient(ellipse 90% 45% at 50% 0%, rgba(255, 250, 235, 0.4) 0%, transparent 70%),
+        radial-gradient(circle at 50% 100%, rgba(45, 48, 58, 0.98) 0%, #101217 100%) !important;
+    border: 3px solid #fef08a !important;
+    box-shadow: 
+        0 35px 90px rgba(0, 0, 0, 0.98),
+        inset 0 2px 4px rgba(255, 255, 255, 0.5),
+        inset 0 -4px 15px rgba(0, 0, 0, 0.9),
+        0 0 45px rgba(254, 240, 138, 0.25) !important;
+}
+
+/* Magnetic Gold Clasp on Front Bottom */
+.casket-front-clasp {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 12px;
+    border-radius: 9999px;
+    background: linear-gradient(180deg, #f5d061 0%, #d4af37 50%, #997517 100%);
+    color: #000000;
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.8), inset 0 1px 1px #ffffff;
+    border: 1px solid #aa8012;
+}
+
+/* Scent Card In-Box Translucency */
+.card-in-box-translucent {
+    opacity: 0.52 !important;
+    transform: scale(0.97) !important;
+    border-color: rgba(212, 175, 55, 0.5) !important;
+    background: rgba(18, 15, 10, 0.6) !important;
+    filter: brightness(0.9) saturate(0.85);
+    transition: all 0.3s ease;
+}
+
+.card-in-box-translucent:hover {
+    opacity: 0.75 !important;
 }
 
 /* Diagonal Ribbon Sash with Gold Foil Crest */
@@ -353,48 +411,48 @@ body {
     border-bottom: 1px solid rgba(70, 5, 15, 0.9);
 }
 
-/* The 3 Recessed Velvet Flacon Niches */
+/* The 3 Recessed Velvet Flacon Niches (Sculpted 3D Depth) */
 .coffret-slot {
     position: relative;
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
-    border-radius: 20px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 18px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 
-        inset 0 10px 28px rgba(0, 0, 0, 0.95),
-        inset 0 0 15px rgba(0, 0, 0, 0.8),
-        0 6px 18px rgba(0, 0, 0, 0.5);
+        inset 0 14px 28px rgba(0, 0, 0, 0.98),
+        inset 0 0 18px rgba(0, 0, 0, 0.9),
+        0 4px 15px rgba(0, 0, 0, 0.6);
 }
 
 .slot-empty {
-    border: 2px dashed rgba(212, 175, 55, 0.35);
-    background: radial-gradient(circle at 50% 40%, rgba(18, 20, 26, 0.8) 0%, rgba(6, 7, 10, 0.95) 100%);
+    border: 1.5px dashed rgba(212, 175, 55, 0.4);
+    background: radial-gradient(circle at 50% 35%, rgba(26, 30, 40, 0.85) 0%, rgba(6, 7, 10, 0.98) 100%);
 }
 
 .slot-empty:hover {
     border-color: #f5d061;
-    background: radial-gradient(circle at 50% 40%, rgba(212, 175, 55, 0.08) 0%, rgba(8, 9, 13, 0.95) 100%);
-    box-shadow: 0 0 25px rgba(212, 175, 55, 0.2), inset 0 10px 30px rgba(0, 0, 0, 0.95);
+    background: radial-gradient(circle at 50% 35%, rgba(212, 175, 55, 0.12) 0%, rgba(8, 9, 13, 0.98) 100%);
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.25), inset 0 14px 30px rgba(0, 0, 0, 0.98);
     transform: translateY(-2px);
 }
 
 .slot-filled {
-    border: 1.5px solid rgba(212, 175, 55, 0.55);
+    border: 1.5px solid rgba(245, 208, 97, 0.65);
     background: 
-        radial-gradient(circle at 50% 65%, rgba(212, 175, 55, 0.08) 0%, transparent 60%),
-        linear-gradient(180deg, rgba(20, 23, 31, 0.95) 0%, rgba(8, 9, 12, 0.98) 100%);
+        radial-gradient(circle at 50% 65%, rgba(212, 175, 55, 0.12) 0%, transparent 65%),
+        linear-gradient(180deg, rgba(22, 25, 34, 0.98) 0%, rgba(8, 9, 12, 0.99) 100%);
     box-shadow: 
-        0 12px 35px rgba(0, 0, 0, 0.85),
-        inset 0 8px 24px rgba(0, 0, 0, 0.9),
-        0 0 18px rgba(212, 175, 55, 0.15);
+        0 14px 35px rgba(0, 0, 0, 0.9),
+        inset 0 12px 25px rgba(0, 0, 0, 0.95),
+        0 0 22px rgba(212, 175, 55, 0.2);
 }
 
 .slot-filled:hover {
-    border-color: rgba(245, 208, 97, 0.85);
+    border-color: rgba(245, 208, 97, 0.9);
     box-shadow: 
-        0 16px 45px rgba(0, 0, 0, 0.9),
-        0 0 30px rgba(212, 175, 55, 0.25);
+        0 18px 45px rgba(0, 0, 0, 0.95),
+        0 0 35px rgba(212, 175, 55, 0.35);
     transform: translateY(-2px);
 }
 

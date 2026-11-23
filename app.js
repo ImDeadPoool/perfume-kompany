@@ -411,7 +411,7 @@ function renderGiftBox() {
         packagingLabel.innerText = `WRAP: ${finishName} + ${ribbonName}`;
     }
 
-    // 7. Update Pricing and Savings
+    // 7. Update Pricing and Savings (Both Desktop & Mobile)
     const totalEl = document.getElementById("box-total-price");
     if (totalEl) totalEl.innerText = `₹${pricing.price.toLocaleString('en-IN')}`;
 
@@ -423,6 +423,11 @@ function renderGiftBox() {
 
     const btnPriceTag = document.getElementById("btn-gift-price-tag");
     if (btnPriceTag) btnPriceTag.innerText = `• ₹${pricing.price.toLocaleString('en-IN')}`;
+
+    document.querySelectorAll(".box-total-price-val").forEach(el => el.innerText = `₹${pricing.price.toLocaleString('en-IN')}`);
+    document.querySelectorAll(".box-regular-price-val").forEach(el => el.innerText = `₹${pricing.regular.toLocaleString('en-IN')}`);
+    document.querySelectorAll(".box-savings-badge-val").forEach(el => el.innerText = `SAVE ₹${pricing.savings.toLocaleString('en-IN')}`);
+    document.querySelectorAll(".btn-gift-price-tag-val").forEach(el => el.innerText = `• ₹${pricing.price.toLocaleString('en-IN')}`);
 
     // 8. Refresh Lucide Icons
     if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -437,7 +442,7 @@ function renderScentPaletteTray() {
         const isInBox = timesInBox > 0;
 
         return `
-            <div class="scent-palette-card glass-panel rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-between text-center border ${isInBox ? 'border-gold-400 bg-gold-950/25 shadow-[0_0_18px_rgba(212,175,55,0.22)]' : 'border-white/10 hover:border-gold-400/60'} transition-all duration-300 cursor-grab active:cursor-grabbing group relative select-none w-[132px] sm:w-auto flex-shrink-0 snap-center"
+            <div class="scent-palette-card glass-panel rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-between text-center border ${isInBox ? 'card-in-box-translucent border-gold-400/70 shadow-[0_0_18px_rgba(212,175,55,0.2)]' : 'border-white/10 hover:border-gold-400/60'} transition-all duration-300 cursor-grab active:cursor-grabbing group relative select-none w-[132px] sm:w-auto flex-shrink-0 snap-center"
                  draggable="true"
                  ondragstart="handleDragStart(event, ${idx})"
                  ondrag="handleCardDrag(event)"
@@ -473,8 +478,8 @@ function renderScentPaletteTray() {
                 </div>
 
                 <!-- Add Button / Drag Hint -->
-                <button type="button" class="w-full mt-2 py-1 px-1.5 rounded-lg ${isInBox ? 'bg-gold-500 text-black font-extrabold shadow-sm' : 'bg-gold-500/15 hover:bg-gold-500 hover:text-black text-gold-300'} border border-gold-500/40 text-[9px] font-bold uppercase transition pointer-events-auto">
-                    ${isInBox ? '+ Add Another' : '+ Place in Box'}
+                <button type="button" class="w-full mt-2 py-1.5 px-1.5 rounded-lg ${isInBox ? 'bg-gold-500/25 text-gold-300 border border-gold-500/40' : 'bg-gold-500/15 hover:bg-gold-500 hover:text-black text-gold-300'} border border-gold-500/40 text-[9px] font-bold uppercase transition pointer-events-auto min-h-[34px] flex items-center justify-center">
+                    ${isInBox ? '✓ In Vault' : '+ Place in Box'}
                 </button>
             </div>
         `;
@@ -764,11 +769,11 @@ function selectGiftBoxSize(size) {
     playSfx('size-switch');
 
     [25, 50, 100].forEach(s => {
-        const btn = document.getElementById(`box-size-btn-${s}`);
-        if (btn) {
+        const btns = document.querySelectorAll(`[id^="box-size-btn-${s}"]`);
+        btns.forEach(btn => {
             if (s === size) btn.classList.add("active");
             else btn.classList.remove("active");
-        }
+        });
     });
 
     renderGiftBox();
@@ -780,11 +785,11 @@ function selectBoxFinish(finish) {
     playSfx('click');
 
     ['obsidian', 'emerald', 'alabaster'].forEach(f => {
-        const btn = document.getElementById(`box-finish-${f}`);
-        if (btn) {
+        const btns = document.querySelectorAll(`[id^="box-finish-${f}"]`);
+        btns.forEach(btn => {
             if (f === finish) btn.classList.add("active");
             else btn.classList.remove("active");
-        }
+        });
     });
 
     renderGiftBox();
@@ -795,11 +800,11 @@ function selectRibbonStyle(ribbon) {
     playSfx('click');
 
     ['gold', 'noir', 'ruby'].forEach(r => {
-        const btn = document.getElementById(`ribbon-style-${r}`);
-        if (btn) {
+        const btns = document.querySelectorAll(`[id^="ribbon-style-${r}"]`);
+        btns.forEach(btn => {
             if (r === ribbon) btn.classList.add("active");
             else btn.classList.remove("active");
-        }
+        });
     });
 
     renderGiftBox();
