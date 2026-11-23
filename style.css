@@ -488,10 +488,14 @@ body {
 
 #dragged-bottle-avatar {
     position: fixed;
+    top: 0;
+    left: 0;
+    margin: 0;
     pointer-events: none;
-    z-index: 999999;
-    will-change: left, top, transform;
-    transition: transform 0.08s ease-out;
+    z-index: 9999999;
+    will-change: transform;
+    transition: none !important;
+    transform: translate3d(-9999px, -9999px, 0);
 }
 
 /* Polished Brass Gold Plaque (Seamless Inset Base) */
@@ -533,7 +537,9 @@ body {
 #scent-palette-tray {
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
-    touch-action: pan-x pan-y;
+    touch-action: pan-x;
+    overscroll-behavior-x: contain;
+    overscroll-behavior-y: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
@@ -543,8 +549,9 @@ body {
 }
 
 .scent-palette-card {
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    touch-action: pan-x pan-y;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+    touch-action: pan-x;
+    -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
 }

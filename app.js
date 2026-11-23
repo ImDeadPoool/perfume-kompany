@@ -611,7 +611,7 @@ function renderScentPaletteTray() {
                 </div>
 
                 <!-- Add Button / Drag Hint -->
-                <button type="button" class="w-full mt-2 py-1.5 px-1.5 rounded-lg ${isInBox ? 'bg-gold-500/25 text-gold-300 border border-gold-500/40' : 'bg-gold-500/15 hover:bg-gold-500 hover:text-black text-gold-300'} border border-gold-500/40 text-[9px] font-bold uppercase transition pointer-events-auto min-h-[34px] flex items-center justify-center space-x-1">
+                <button type="button" onclick="event.stopPropagation(); handlePalettePerfumeClick(${idx});" class="w-full mt-2 py-1.5 px-1.5 rounded-lg ${isInBox ? 'bg-gold-500/25 text-gold-300 border border-gold-500/40' : 'bg-gold-500/15 hover:bg-gold-500 hover:text-black text-gold-300'} border border-gold-500/40 text-[9px] font-bold uppercase transition pointer-events-auto min-h-[34px] flex items-center justify-center space-x-1">
                     <span>${isInBox ? '✓ In Vault' : '+ Place in Box'}</span>
                     <span class="text-[8px] font-mono font-normal opacity-80">(₹${price})</span>
                 </button>
@@ -653,6 +653,7 @@ let touchStartY = 0;
 let touchStartTime = 0;
 let currentHoveredSlot = null;
 let activeTargetSlot = null;
+let lastPaletteActionTime = 0;
 
 function showDragAvatar(perfumeIndex, x, y, isTouch = false) {
     const avatar = document.getElementById("dragged-bottle-avatar");
@@ -664,20 +665,17 @@ function showDragAvatar(perfumeIndex, x, y, isTouch = false) {
     img.src = perfume.image;
     if (nameEl) nameEl.innerText = perfume.name;
     
-    // Float avatar 70px above touch coordinates on mobile so thumb never covers it
-    const offsetY = isTouch ? -70 : -35;
-    avatar.style.left = `${x}px`;
-    avatar.style.top = `${y + offsetY}px`;
     avatar.classList.remove("hidden");
     avatar.style.display = "block";
+    updateDragAvatarPos(x, y, isTouch);
 }
 
 function updateDragAvatarPos(x, y, isTouch = false) {
     const avatar = document.getElementById("dragged-bottle-avatar");
-    if (!avatar || avatar.classList.contains("hidden")) return;
-    const offsetY = isTouch ? -70 : -35;
-    avatar.style.left = `${x}px`;
-    avatar.style.top = `${y + offsetY}px`;
+    if (!avatar) return;
+    // On mobile, float the bottle ~75px above touch coordinates so the finger never blocks the view of the bottle or slot
+    const offsetY = isTouch ? -75 : -40;
+    avatar.style.transform = `translate3d(${x}px, ${y + offsetY}px, 0) translate(-50%, -50%)`;
 }
 
 function hideDragAvatar() {
@@ -685,37 +683,48 @@ function hideDragAvatar() {
     if (!avatar) return;
     avatar.classList.add("hidden");
     avatar.style.display = "none";
+    avatar.style.transform = `translate3d(-9999px, -9999px, 0)`;
 }
 
-// Robust proximity hit-testing using bounding boxes with generous mobile touch margins
+// Robust multi-point proximity hit-testing using bounding boxes with generous mobile touch margins
 function getSlotUnderPoint(x, y, isTouch = false) {
-    const testY = isTouch ? y - 70 : y;
-    const testX = x;
-
     let closestSlot = null;
     let minDistance = Infinity;
+
+    // Test both the floating bottle position and the finger position for effortless targeting
+    const testPoints = isTouch
+        ? [{ x, y: y - 75 }, { x, y: y - 38 }, { x, y }]
+        : [{ x, y }];
+
+    // 40px generous padding on mobile touchscreen
+    const padX = isTouch ? 40 : 15;
+    const padY = isTouch ? 45 : 15;
 
     for (let i = 0; i < 3; i++) {
         const slot = document.getElementById(`coffret-slot-${i}`);
         if (!slot) continue;
         const rect = slot.getBoundingClientRect();
 
-        // 35px generous padding on mobile touchscreen
-        const padX = isTouch ? 35 : 10;
-        const padY = isTouch ? 40 : 10;
+        const slotMinX = rect.left - padX;
+        const slotMaxX = rect.right + padX;
+        const slotMinY = rect.top - padY;
+        const slotMaxY = rect.bottom + padY;
 
-        if (
-            testX >= rect.left - padX &&
-            testX <= rect.right + padX &&
-            testY >= rect.top - padY &&
-            testY <= rect.bottom + padY
-        ) {
-            const cx = rect.left + rect.width / 2;
-            const cy = rect.top + rect.height / 2;
-            const dist = Math.hypot(testX - cx, testY - cy);
-            if (dist < minDistance) {
-                minDistance = dist;
-                closestSlot = i;
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+
+        for (const pt of testPoints) {
+            if (
+                pt.x >= slotMinX &&
+                pt.x <= slotMaxX &&
+                pt.y >= slotMinY &&
+                pt.y <= slotMaxY
+            ) {
+                const dist = Math.hypot(pt.x - cx, pt.y - cy);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    closestSlot = i;
+                }
             }
         }
     }
@@ -738,13 +747,16 @@ function setHoveredSlot(slotIdx) {
         if (nextSlot) {
             nextSlot.classList.add("slot-drag-over");
             playSfx('click');
-            if (navigator.vibrate) navigator.vibrate(15);
+            if (navigator.vibrate) {
+                try { navigator.vibrate(15); } catch (_) {}
+            }
         }
     }
 }
 
 // Touch Event Handlers (Mobile-First Touchscreen Engine)
 function handleTouchStart(e, perfumeIndex) {
+    if (e.touches.length > 1) return;
     activeDragPerfumeIndex = perfumeIndex;
     isTouchDragging = false;
     touchStartTime = Date.now();
@@ -759,21 +771,25 @@ function handleTouchMove(e) {
     const dx = touch.clientX - touchStartX;
     const dy = touch.clientY - touchStartY;
 
-    // Only start bottle drag if moving UPWARDS towards the gift casket slots
-    // If movement is horizontal (swiping carousel left/right), DO NOT intercept!
-    if (!isTouchDragging && dy < -18 && Math.abs(dy) > Math.abs(dx) * 1.2) {
+    // Detect upward motion towards the coffret box
+    // dy < -14 means user has moved finger upwards by 14px (handles both vertical and diagonal drags)
+    if (!isTouchDragging && dy < -14) {
         isTouchDragging = true;
         playSfx('click');
-        if (navigator.vibrate) navigator.vibrate(25);
+        if (navigator.vibrate) {
+            try { navigator.vibrate(25); } catch (_) {}
+        }
         // Illuminate all 3 slots with drop guides
         document.querySelectorAll(".coffret-slot").forEach(s => s.classList.add("slot-drop-guide"));
+        showDragAvatar(activeDragPerfumeIndex, touch.clientX, touch.clientY, true);
     }
 
     if (isTouchDragging) {
+        // Prevent default screen scrolling during bottle drag so page doesn't jerk
         if (e.cancelable) e.preventDefault();
         
-        // Float avatar 70px above thumb so user can clearly see where to drop
-        showDragAvatar(activeDragPerfumeIndex, touch.clientX, touch.clientY, true);
+        // Float avatar ~75px above thumb so user can clearly see where to drop
+        updateDragAvatarPos(touch.clientX, touch.clientY, true);
         
         const slotIdx = getSlotUnderPoint(touch.clientX, touch.clientY, true);
         setHoveredSlot(slotIdx);
@@ -785,6 +801,7 @@ function handleTouchEnd(e, perfumeIndex) {
     document.querySelectorAll(".coffret-slot").forEach(s => s.classList.remove("slot-drop-guide"));
 
     if (isTouchDragging && activeDragPerfumeIndex !== null) {
+        if (e.cancelable) e.preventDefault();
         const touch = e.changedTouches[0];
         const slotIdx = getSlotUnderPoint(touch.clientX, touch.clientY, true);
         
@@ -802,7 +819,7 @@ function handleTouchEnd(e, perfumeIndex) {
         return;
     }
 
-    // Clean tap detection on mobile: if finger moved < 12px and touched for < 350ms
+    // Clean tap detection on mobile: if finger moved < 14px and touched for < 380ms
     const touch = e.changedTouches[0];
     const moveDist = Math.hypot(touch.clientX - touchStartX, touch.clientY - touchStartY);
     const duration = Date.now() - touchStartTime;
@@ -812,8 +829,11 @@ function handleTouchEnd(e, perfumeIndex) {
     isTouchDragging = false;
     activeDragPerfumeIndex = null;
 
-    if (moveDist < 12 && duration < 350) {
-        // Instant tactile tap!
+    if (moveDist < 14 && duration < 380) {
+        // Critical: suppress synthetic mouse/click event in mobile browsers to prevent double-tap
+        if (e.cancelable) {
+            e.preventDefault();
+        }
         handlePalettePerfumeClick(perfumeIndex);
     }
 }
@@ -884,6 +904,13 @@ function animateSlotDrop(slotIndex) {
 
 // 1-Tap Quick Action (Instant Touch Friendly & Seamless Mobile Targeting)
 function handlePalettePerfumeClick(perfumeIndex) {
+    const now = Date.now();
+    // Strict debounce: ignore any duplicate call within 450ms (prevents double-tap on mobile touch + synthetic click)
+    if (now - lastPaletteActionTime < 450) {
+        return;
+    }
+    lastPaletteActionTime = now;
+
     // If a slot was tapped and targeted, place into that slot
     let targetSlot = activeTargetSlot !== null ? activeTargetSlot : APP.giftBox.slots.findIndex(s => s === null);
     if (targetSlot === -1 || targetSlot === null) {
